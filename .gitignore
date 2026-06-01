@@ -1,5 +1,6 @@
 # Python/runtime
 .venv/
+.local-tools/
 __pycache__/
 *.py[cod]
 
