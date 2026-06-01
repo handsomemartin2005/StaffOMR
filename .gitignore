@@ -1,0 +1,25 @@
+# Python/runtime
+.venv/
+__pycache__/
+*.py[cod]
+
+# Large local datasets and scratch data
+data/
+dataset/
+ds2_dense/
+(1)/
+
+# Generated output trees. Curated demo outputs live under examples/.
+outputs/
+
+# Local research/source files not needed in the public demo repo
+/*.pdf
+/*.docx
+/*.pptx
+/deep-research-report.md
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
