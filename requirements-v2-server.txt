@@ -1,0 +1,16 @@
+# Install torch/torchvision separately with the CUDA wheel that matches the server.
+# scripts/setup_pro6000_server.sh does that before installing this file.
+numpy
+Pillow
+transformers
+scikit-learn
+sam2
+faster-coco-eval
+tensorboard
+scipy
+calflops
+rapidocr-onnxruntime
+opencv-python-headless
+gdown
+PyYAML
+tqdm

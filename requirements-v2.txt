@@ -1,0 +1,16 @@
+numpy
+Pillow
+torch
+torchvision
+transformers
+scikit-learn
+sam2
+faster-coco-eval
+tensorboard
+scipy
+calflops
+rapidocr-onnxruntime
+opencv-python-headless
+gdown
+PyYAML
+tqdm
