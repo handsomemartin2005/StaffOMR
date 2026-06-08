@@ -88,6 +88,47 @@ bash scripts/run_pro6000_v2_expanded.sh --train-batch-size 32 --val-batch-size 4
 bash scripts/run_pro6000_v2_expanded.sh --train-batch-size 24 --val-batch-size 4
 ```
 
+## 跑 V2.1 重构对比
+
+训练完成后直接运行：
+
+```bash
+bash scripts/run_v2_1_after_training.sh
+```
+
+脚本会自动选择：
+
+```text
+outputs/v2_deim_runs/v2_symbol_all_expanded_pro6000/best_stg2.pth
+outputs/v2_deim_runs/v2_symbol_all_expanded_pro6000/best_stg1.pth
+outputs/v2_deim_runs/v2_symbol_all_expanded_pro6000/last.pth
+```
+
+优先级从上到下。默认样例输入是：
+
+```text
+ds2_dense/ds2_dense/images/lg-2267728-aug-beethoven--page-2.png
+```
+
+输出位置：
+
+```text
+outputs/v2_1_runs/pro6000_sample/summary.json
+outputs/v2_1_runs/pro6000_sample/visuals/input_vs_v2_reconstructed.png
+outputs/v2_1_runs/pro6000_sample/visuals/v2_1_relation_overlay.png
+outputs/v2_1_runs/pro6000_sample/symbols/symbols_v2_1_shapes.json
+```
+
+如果要换页面：
+
+```bash
+INPUT=ds2_dense/ds2_dense/images/your-page.png \
+OUT_ROOT=outputs/v2_1_runs/your-page \
+bash scripts/run_v2_1_after_training.sh
+```
+
+如果服务器上没有 SAM2 checkpoint，脚本不会中断，会自动用 bbox fallback masks 跑 V2.1。等 SAM2 checkpoint 放到 `outputs/models/sam2/sam2.1_hiera_tiny.pt` 后，会自动启用 SAM2。
+
 ## 中断后续训
 
 ```bash

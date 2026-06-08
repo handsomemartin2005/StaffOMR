@@ -39,6 +39,8 @@ def main() -> None:
     parser.add_argument("--deim-run-dir", type=Path, default=Path("outputs/v2_deim_runs/v2_symbol_detector"))
     parser.add_argument("--deim-checkpoint", type=Path)
     parser.add_argument("--deim-tuning-checkpoint", type=Path)
+    parser.add_argument("--skip-deim-dataset-prepare", action="store_true")
+    parser.add_argument("--skip-deim-config", action="store_true")
     parser.add_argument("--skip-deim-train", action="store_true")
     parser.add_argument("--deim-epochs", type=int, default=4)
     parser.add_argument("--deim-train-limit", type=int, default=8)
@@ -113,56 +115,62 @@ def main() -> None:
     detector_summary: dict[str, str | None] = {"type": args.detector, "checkpoint": None, "predictions": None}
     if args.detector == "deim":
         image_name = args.input.name
-        run(
-            [
-                py,
-                "tools/prepare_deepscores_v2_dataset.py",
-                "--train-json",
-                str(args.deim_train_json),
-                "--val-json",
-                str(args.deim_val_json),
-                "--image-root",
-                str(args.deim_image_root),
-                "--out-root",
-                str(args.deim_dataset_root),
-                "--train-limit",
-                str(args.deim_train_limit),
-                "--val-limit",
-                str(args.deim_val_limit),
-                "--include-train-image",
-                image_name,
-                "--include-val-image",
-                image_name,
-                "--taxonomy",
-                args.deim_taxonomy,
-            ],
-            root,
-        )
-        run(
-            [
-                py,
-                "tools/create_deim_symbol_config.py",
-                "--dataset-root",
-                str(args.deim_dataset_root),
-                "--image-root",
-                str(args.deim_image_root),
-                "--out-config",
-                str(args.deim_config),
-                "--deim-output-dir",
-                str(args.deim_run_dir),
-                "--epochs",
-                str(args.deim_epochs),
-                "--train-batch-size",
-                str(args.deim_train_batch_size),
-                "--val-batch-size",
-                str(args.deim_val_batch_size),
-                "--num-workers",
-                str(args.deim_num_workers),
-                "--taxonomy",
-                args.deim_taxonomy,
-            ],
-            root,
-        )
+        if not args.skip_deim_dataset_prepare:
+            run(
+                [
+                    py,
+                    "tools/prepare_deepscores_v2_dataset.py",
+                    "--train-json",
+                    str(args.deim_train_json),
+                    "--val-json",
+                    str(args.deim_val_json),
+                    "--image-root",
+                    str(args.deim_image_root),
+                    "--out-root",
+                    str(args.deim_dataset_root),
+                    "--train-limit",
+                    str(args.deim_train_limit),
+                    "--val-limit",
+                    str(args.deim_val_limit),
+                    "--include-train-image",
+                    image_name,
+                    "--include-val-image",
+                    image_name,
+                    "--taxonomy",
+                    args.deim_taxonomy,
+                ],
+                root,
+            )
+        elif not deim_train_ann.exists():
+            raise FileNotFoundError(f"Cannot load DEIM class names; missing {deim_train_ann}")
+        if not args.skip_deim_config:
+            run(
+                [
+                    py,
+                    "tools/create_deim_symbol_config.py",
+                    "--dataset-root",
+                    str(args.deim_dataset_root),
+                    "--image-root",
+                    str(args.deim_image_root),
+                    "--out-config",
+                    str(args.deim_config),
+                    "--deim-output-dir",
+                    str(args.deim_run_dir),
+                    "--epochs",
+                    str(args.deim_epochs),
+                    "--train-batch-size",
+                    str(args.deim_train_batch_size),
+                    "--val-batch-size",
+                    str(args.deim_val_batch_size),
+                    "--num-workers",
+                    str(args.deim_num_workers),
+                    "--taxonomy",
+                    args.deim_taxonomy,
+                ],
+                root,
+            )
+        elif not args.deim_config.exists():
+            raise FileNotFoundError(f"Cannot run DEIM inference; missing config {args.deim_config}")
         if args.deim_checkpoint is None and not args.skip_deim_train:
             train_cmd = [
                 py,

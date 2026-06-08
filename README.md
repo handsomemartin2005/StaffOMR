@@ -101,6 +101,12 @@ After copying the DeepScores dense dataset into `ds2_dense/ds2_dense`, start the
 bash scripts/run_pro6000_v2_expanded.sh
 ```
 
+After training, run the V2.1 shape/relation extraction and reconstruction comparison on a sample page:
+
+```bash
+bash scripts/run_v2_1_after_training.sh
+```
+
 The server runbook is documented in `docs/pro6000_server_runbook_zh.md`.
 
 Run the complete target-page V2 pipeline with DEIM-D-FINE tuning, DINOv2, SAM2, OCR, and V1/V2 metrics:
