@@ -10,4 +10,7 @@ if [[ -f "$VENV_DIR/bin/activate" ]]; then
   source "$VENV_DIR/bin/activate"
 fi
 
+ulimit -n "${ULIMIT_NOFILE:-65535}" 2>/dev/null || true
+export PYTORCH_SHARING_STRATEGY="${PYTORCH_SHARING_STRATEGY:-file_system}"
+
 python tools/launch_v2_expanded_training.py "$@"

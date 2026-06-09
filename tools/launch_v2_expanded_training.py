@@ -108,6 +108,22 @@ def write_launch_info(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def raise_nofile_limit(target: int = 65535) -> dict[str, int | str]:
+    if os.name == "nt":
+        return {"status": "unsupported_on_windows"}
+    try:
+        import resource
+    except ImportError:
+        return {"status": "resource_module_unavailable"}
+
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    new_soft = min(max(soft, target), hard)
+    if new_soft > soft:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (new_soft, hard))
+    final_soft, final_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    return {"soft": int(final_soft), "hard": int(final_hard)}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare and train the V2 expanded DEIM detector on a Linux GPU server.")
     parser.add_argument("--workdir", type=Path, default=Path.cwd())
@@ -171,6 +187,7 @@ def main() -> None:
     num_workers = args.num_workers if args.num_workers >= 0 else auto_workers()
 
     run_dir.mkdir(parents=True, exist_ok=True)
+    nofile_limit = raise_nofile_limit()
     launch_info = {
         "started_at": datetime.now().isoformat(timespec="seconds"),
         "workdir": str(root),
@@ -188,6 +205,7 @@ def main() -> None:
         "run_dir": str(run_dir),
         "tuning_checkpoint": str(tuning_checkpoint) if tuning_checkpoint else None,
         "resume": str(resume) if resume else None,
+        "nofile_limit": nofile_limit,
     }
     write_launch_info(run_dir / "train_launch_info.json", launch_info)
     print(json.dumps(launch_info, ensure_ascii=False, indent=2), flush=True)
@@ -267,6 +285,7 @@ def main() -> None:
 
     env = os.environ.copy()
     env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "max_split_size_mb:256")
+    env.setdefault("PYTORCH_SHARING_STRATEGY", "file_system")
     if args.memory_fraction is not None:
         env["PYTORCH_CUDA_MEMORY_FRACTION"] = str(args.memory_fraction)
 
@@ -274,6 +293,7 @@ def main() -> None:
     launch_info["env"] = {
         "PYTORCH_CUDA_ALLOC_CONF": env.get("PYTORCH_CUDA_ALLOC_CONF"),
         "PYTORCH_CUDA_MEMORY_FRACTION": env.get("PYTORCH_CUDA_MEMORY_FRACTION"),
+        "PYTORCH_SHARING_STRATEGY": env.get("PYTORCH_SHARING_STRATEGY"),
     }
     write_launch_info(run_dir / "train_launch_info.json", launch_info)
 
