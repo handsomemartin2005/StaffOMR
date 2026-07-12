@@ -42,3 +42,5 @@
 ## Screenshot Review
 | issue | observed screenshot | requirement evidence | cells | patch summary | status |
 | --- | --- | --- | --- | --- | --- |
+| Draw.io iframe did not render in the headless browser. | `staff_overview_preview.png` was blank. | Skill requires screenshot evidence. | preview path | Generated a semantically matched SVG/PNG from the same coordinate specification and inspected the full canvas. | disclosed limitation |
+| Full-canvas visual audit. | `staff_overview.png` | R1--R4 | all | No clipped text, overlap, hidden connector, or wrong arrow direction was observed. | pass |

@@ -13,6 +13,19 @@ ds2_dense/
 # Generated output trees. Curated demo outputs live under examples/.
 outputs/
 
+# Local scratch and generated paper build artifacts
+tmp/
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+/paper/aaai27/staff_aaai27.pdf
+/paper/aaai27/staff_overview_preview*.png
+
 # Local research/source files not needed in the public demo repo
 /*.pdf
 /*.docx
