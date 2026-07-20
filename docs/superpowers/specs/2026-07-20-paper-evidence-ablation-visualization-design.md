@@ -34,13 +34,13 @@ New experiments must add a distinct reviewer-facing answer rather than another t
 
 ### E1: Relation Edge-Family Ablation
 
-Use the frozen Debussy transfer24 inputs and the accepted A1B1C1D1 policy. Add explicit switches for these relation families:
+Use the frozen Debussy transfer24 inputs and the accepted A1B1C1D1 policy. The frozen shapes inventory contains 4,613 edges across three active relation families:
 
-1. notehead--stem;
-2. stem--beam;
-3. ledger-line--notehead;
-4. accidental--note;
-5. slur endpoint relations, if the current exporter consumes them semantically.
+1. `notehead_stem_attachment`: 3,900 edges on 24/24 pages;
+2. `beam_stem_group`: 585 edges on 23/24 pages;
+3. `slur_tie_notehead_endpoints`: 128 edges on 21/24 pages.
+
+Ledger-line--notehead and accidental--note were planned relation families but are absent from the frozen Debussy relation lists. They are recorded as inactive and are not presented as executed ablations.
 
 Variants:
 
