@@ -20,6 +20,10 @@ class Event:
 
 def musicxml_events(path: Path) -> list[Event]:
     root = ET.parse(path).getroot()
+    return musicxml_element_events(root)
+
+
+def musicxml_element_events(root: ET.Element, *, implicit_rest: bool = True) -> list[Event]:
     events: list[Event] = []
     for part in root.findall(".//part"):
         divisions = 1
@@ -30,6 +34,8 @@ def musicxml_events(path: Path) -> list[Event]:
             for note in measure.findall("note"):
                 pitch = note.find("pitch")
                 if pitch is None:
+                    if note.find("rest") is None and not implicit_rest:
+                        continue
                     pitch_token = "R"
                 else:
                     step = pitch.findtext("step", "C")

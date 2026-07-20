@@ -1,4 +1,5 @@
 from fractions import Fraction
+import xml.etree.ElementTree as ET
 
 import pytest
 
@@ -8,6 +9,7 @@ from tools.paper_evidence_metrics import (
     decompose_event_errors,
     multiset_counts,
     paired_bootstrap_delta,
+    musicxml_element_events,
 )
 
 
@@ -78,3 +80,16 @@ def test_paired_bootstrap_is_deterministic_and_validates_pair_count() -> None:
     assert first["full_minus_ablated"] == pytest.approx(50.0)
     with pytest.raises(ValueError, match="equal page counts"):
         paired_bootstrap_delta(full, ablated[:1], samples=100, seed=7)
+
+
+def test_musicxml_parser_can_skip_pitchless_non_rest_placeholders() -> None:
+    root = ET.fromstring(
+        "<score-partwise><part><measure><attributes><divisions>1</divisions></attributes>"
+        "<note><duration>1</duration></note>"
+        "<note><rest/><duration>1</duration></note>"
+        "</measure></part></score-partwise>"
+    )
+
+    assert musicxml_element_events(root, implicit_rest=False) == [
+        Event("R", Fraction(1, 1))
+    ]
