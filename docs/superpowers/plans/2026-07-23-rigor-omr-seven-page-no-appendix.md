@@ -188,3 +188,49 @@ Run: `$env:PYTHONPATH='.'; python -m pytest -q tests/test_build_paper_qualitativ
 
 Expected: all focused tests pass. Record the known unrelated `select_ranked_pages` collection failure separately.
 
+---
+
+### Task 6: Fill the seventh content page with retained evidence
+
+**Files:**
+- Restore: `paper/aaai27/figure/per_item_difference_small_multiples.pdf`
+- Create: `paper/aaai27/table/datasets.tex`
+- Create: `paper/aaai27/table/relation_inventory.tex`
+- Modify: `paper/aaai27/sections/experiments.tex`
+- Modify: `paper/aaai27/main.tex`
+- Regenerate: `paper/aaai27/RIGOR_OMR_AAAI27_7PAGE_preview.pdf`
+- Regenerate: `paper/aaai27/RIGOR_OMR_AAAI27_7PAGE_NO_APPENDIX.zip`
+
+**Interfaces:**
+- Consumes: validated former-appendix figure/table assets and the compiled seven-page draft.
+- Produces: a nine-page submission PDF whose first seven pages contain the full main text and whose pages eight and nine contain references only.
+
+- [ ] **Step 1: Restore only the approved evidence assets**
+
+Extract `figure/per_item_difference_small_multiples.pdf` from the last qualitative-ready source package. Recreate the compact dataset-role and relation-inventory tables from their validated former-appendix values. Do not restore the density-tertile figure, Polish waterfall, appendix driver, or unused full tables.
+
+- [ ] **Step 2: Integrate the restored evidence into Experiments**
+
+Place the dataset table in Protocol and Baselines, the per-item distribution after the aggregate comparison figure, and the relation inventory after the complete relation ablation. Replace the dense inventory sentence with a reproducibility sentence. Add count-correct values `11.118/5.562/9.234`, Polish R3 `95.9293` at `141/5002` coverage, and the invalid cross-page mathematical reference `57.0793` in concise diagnostic prose.
+
+- [ ] **Step 3: Enforce the content/reference boundary**
+
+Insert `\clearpage` immediately before `\bibliography{reference}` in `paper/aaai27/main.tex`. Compile with:
+
+```powershell
+latexmk -g -pdf -interaction=nonstopmode -halt-on-error main.tex
+```
+
+Expected: at most nine pages; Conclusion ends on page 7; References begins on page 8; pages 8--9 contain no non-reference section.
+
+- [ ] **Step 4: Tune density without weakening legibility**
+
+If the conclusion ends before page 7, enlarge neither decorative figures nor fonts. Restore supported protocol/diagnostic explanation or adjust the per-item figure width within the AAAI columns. If content spills to page 8, first remove repeated numeric narration and transitions. Do not alter template margins or body font size.
+
+- [ ] **Step 5: Run visual and static verification**
+
+Render pages 6--9 with `pdftoppm`, inspect float order and whitespace, and run `pdffonts`. Search the final log for undefined references/citations, missing files, and overfull boxes. Expected: no such issues, no Type 3 fonts, and all fonts embedded.
+
+- [ ] **Step 6: Rebuild and independently compile the Overleaf ZIP**
+
+Stage only files reachable from `main.tex`, plus the style, bibliography, and reproducibility checklist sources. Include the new figure and two tables; exclude Appendix, density/Polish diagnostic figures, auxiliaries, previews, and old archives. Extract into a fresh temporary directory and compile from zero. Expected: the extracted package reproduces the same nine-page boundary.
