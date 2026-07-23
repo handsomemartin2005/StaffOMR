@@ -308,11 +308,11 @@ Render pages 5--7 and extract their text. Confirm that page 5 ends immediately a
 
 - [ ] **Step 2: Restore standard float environments**
 
-Remove `cuted` from `head.tex`. Replace the grouped `[p]` block with separate `figure*[!t]` environments for Figure 3 and Figure 4. Replace the qualitative `strip` with `figure*[!t]`, and make the binding plot a one-column `figure[!t]`. Leave all labels and figure files unchanged.
+Remove `cuted` from `head.tex`. Replace the grouped `[p]` block with a top-positioned standard `figure*` block that preserves separate Figure 3/4 captions. Replace the qualitative `strip` with `figure*[!t]`, and make the binding plot an inline one-column minipage. Leave all labels and figure files unchanged.
 
 - [ ] **Step 3: Restore standard section ownership**
 
-Move `\input{sections/conclusion}` back to `main.tex` after Experiments. Remove that input from the right-column minipage and dissolve both diagnostic minipages into ordinary prose, figure, table, Limitations, and Conclusion flow.
+Move `\input{sections/conclusion}` back to `main.tex` after Experiments. Remove that input from the right-column minipage and dissolve both diagnostic minipages into ordinary prose, an inline binding figure, the Polish table, Limitations, and Conclusion. Use only localized column transitions and one post-binding float barrier to preserve order.
 
 - [ ] **Step 4: Compile and render pages 5--8**
 

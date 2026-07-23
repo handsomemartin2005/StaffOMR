@@ -137,7 +137,7 @@ The deterministic float-page design above is superseded because its `figure*[p]`
 - Figure 3 and Figure 4 remain separate full-width figures, declared as standard `figure*` floats with top placement. They may share page 6, but neither may request a float-only page.
 - Figure 5 remains a landscape, full-width `figure*` at the top of page 7.
 - Figure 6 returns to a normal one-column `figure`; the Polish table, Limitations, and Conclusion remain ordinary two-column content.
-- `\FloatBarrier`, `strip`, `cuted`, full-page minipages, and conclusion inclusion inside Experiments are removed.
+- `strip`, `cuted`, full-page minipages, and conclusion inclusion inside Experiments are removed. One localized `\FloatBarrier` remains after the inline binding figure so Figure 5 cannot appear after the Polish analysis or conclusion.
 - `main.tex` owns the normal section order again: Experiments, Conclusion, then a page break and References.
-- Page 5 must continue with experiment prose below Figure 2 instead of ending with a large blank region. Pages 6--7 must not be vertically centered float pages.
+- Page 5 carries Figures 3--4 plus the remaining ablation prose. Page 6 uses an explicit column transition to balance relation tables against qualitative/binding analysis. Page 7 places Figure 5 at full width and balances Polish diagnostics against Limitations/Conclusion.
 - No experimental value, table row, figure content, or claim is removed by this correction, and no ZIP archive is created or modified.
