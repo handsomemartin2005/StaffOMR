@@ -68,21 +68,21 @@ Expected: compilation completes; the only known source warnings are unresolved `
 Inside the relevant functions, assert the exact display-driving arrays before plotting:
 
 ```python
-np.testing.assert_allclose(diff, [13.352, 15.751, 6.449, 0.736], atol=1e-9)
+np.testing.assert_allclose(np.round(diff, 3), [13.352, 15.751, 6.449, 0.736], atol=1e-9)
 np.testing.assert_array_equal(wtl, [[24, 0, 0], [24, 0, 0], [22, 0, 2], [15, 0, 9]])
-np.testing.assert_allclose(effect, [1.470, 1.403, 0.669, 0.583, 1.911, 1.543], atol=1e-9)
+np.testing.assert_allclose(np.round(effect, 3), [1.470, 1.403, 0.669, 0.583, 1.911, 1.543], atol=1e-9)
 np.testing.assert_allclose(
-    scores,
+    np.round(scores, 3),
     [[8.517, 26.119, 33.901], [2.068, 4.553, 16.530], [7.781, 20.318, 29.550]],
     atol=1e-9,
 )
-np.testing.assert_allclose(ser, [95.96, 91.75, 85.26, 77.20], atol=1e-9)
+np.testing.assert_allclose(np.round(ser, 2), [95.96, 91.75, 85.26, 77.20], atol=1e-9)
 ```
 
 - [ ] **Step 2: Run the script and verify the assertions initially expose any mismatched source ordering**
 
 ```powershell
-python tools\build_paper_evidence_figures.py --out-dir tmp\rigor_omr_user_base_20260723\figure
+python tools\build_paper_evidence_figures.py --out tmp\rigor_omr_user_base_20260723\figure
 ```
 
 Expected before the rewrite: at least the zero-shot/relation arrays require reordering or filtering to match the approved row order, or the command writes the older plot geometry that fails the visual acceptance criteria.
@@ -133,7 +133,7 @@ Use a light gray background to distinguish diagnostic lower bounds.
 - [ ] **Step 7: Generate and validate the figure artifacts**
 
 ```powershell
-python tools\build_paper_evidence_figures.py --out-dir tmp\rigor_omr_user_base_20260723\figure
+python tools\build_paper_evidence_figures.py --out tmp\rigor_omr_user_base_20260723\figure
 Get-Item tmp\rigor_omr_user_base_20260723\figure\zero_shot_main_results.pdf,tmp\rigor_omr_user_base_20260723\figure\cross_domain_relation_forest.pdf,tmp\rigor_omr_user_base_20260723\figure\debussy_binding_gap.pdf,tmp\rigor_omr_user_base_20260723\figure\polish_structure_diagnosis.pdf | Select-Object Name,Length
 pdffonts tmp\rigor_omr_user_base_20260723\figure\zero_shot_main_results.pdf
 ```
