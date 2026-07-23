@@ -89,6 +89,17 @@ The fill order is fixed:
 
 The density-tertile figure and Polish waterfall are not fallback padding. If space remains after the protected additions, it will be used for protocol or implementation detail already supported by the code and artifacts, not for unsupported claims or enlarged decorative figures.
 
+## Final Pages 6--7 Layout Amendment
+
+The last two content pages must not contain the large empty right-column regions produced by independent two-column floats. Their layout is fixed as follows:
+
+- Page 6 groups the per-item paired-difference visualization and cross-domain relation-ablation forest vertically at full two-column width. They retain separate figure numbers and captions, and their internal text is not reduced below the approved Times New Roman sizes.
+- Page 7 restores the `test_0006` qualitative visualization to the approved full-width landscape design: one full-system overlay above five aligned local panels for staff, accepted symbols, masks, relations, and graph reconstruction.
+- The binding figure, Polish diagnostic ledger, limitations, and conclusion follow the qualitative visualization in balanced two-column text. The conclusion remains before the bibliography, with no result figure appearing after it.
+- The bibliography begins on page 8. Pages 8--9, if both are needed, contain references only.
+
+Implementation must eliminate the independent float queues responsible for the whitespace. A grouped full-width result block or an equivalent deterministic two-column placement is acceptable; shrinking either result visualization into a single-column figure is not.
+
 ## File and Package Changes
 
 The implementation will revise:
