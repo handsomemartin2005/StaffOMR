@@ -12,8 +12,9 @@ The main experiment sequence becomes:
 
 1. Performance: paired zero-shot improvements over the baselines.
 2. Mechanism: relation-family ablations across domains.
-3. Qualitative evidence: detections, masks, and typed relation reconstruction
-   on one real best-performing system.
+3. Qualitative evidence: staff localization, detections, masks, and typed
+   relation reconstruction on one local group from a real best-performing
+   system.
 
 The existing pitch--duration point plot moves to the appendix so that the main
 paper still contains three focused result figures.
@@ -38,6 +39,11 @@ artifacts:
 - beam SAM2 mask score 0.888 for `deim_000069`;
 - actual `notehead_stem_attachment` and `beam_stem_group` edges.
 
+Every stage uses the same source crop, approximately `(965, 390, 1170, 515)`
+in the 3524-by-732 input coordinate system. The crop may be expanded by at most
+one staff space on any side for label clearance, but its musical content must
+not change.
+
 The implementation does not contain a direct notehead--beam edge. The visual
 must therefore show the true composition
 `notehead -> stem -> beam` and must not label it as a direct head--beam
@@ -45,21 +51,28 @@ relation.
 
 ## Figure layout
 
-Create one two-column `figure*` PDF with a wide overview above three aligned
-local panels.
+Create one compact two-column `figure*` PDF containing five equal-width local
+panels in a single horizontal row. Do not include a full-system overview. The
+panels reuse the same crop and coordinate system so readers can follow the
+evidence without repeatedly relocating the symbols.
 
-### Panel (a): accepted detection overview
+### Panel (a): local staff localization
 
-- Show the complete `test_0006` system.
-- Draw boxes only for accepted core objects used by the structured pipeline:
-  filled/open noteheads, stems, and beams.
-- Do not print a class name or confidence value beside every box.
-- Use a single callout rectangle to identify the local group used in panels
-  (b)--(d).
-- Keep the score image legible; box strokes must remain subordinate to the
-  notation.
+- Show the selected local image crop.
+- Draw the stored five staff-line coordinates that cross the crop and a light
+  staff-band boundary derived from the saved staff geometry.
+- Do not add a full-page locator inset or repeat the unannotated input as a
+  separate panel.
 
-### Panel (b): real mask evidence
+### Panel (b): accepted core detections
+
+- Reuse the crop from panel (a).
+- Draw boxes only for the selected accepted noteheads, synthetic stems, and
+  beam.
+- Do not print class names, IDs, or confidence values inside the panel.
+- Keep box strokes subordinate to the notation.
+
+### Panel (c): real mask evidence
 
 - Show the selected local image crop.
 - Overlay the actual box-prompted SAM2 masks for the two noteheads and beam.
@@ -69,20 +82,20 @@ local panels.
 - This panel demonstrates intermediate geometric inspectability only. It must
   not imply that SAM2 improves the endpoint Event-F1.
 
-### Panel (c): typed relations on the image
+### Panel (d): typed relations on the image
 
-- Reuse exactly the same crop and coordinate system as panel (b).
+- Reuse exactly the same crop and coordinate system as panels (a)--(c).
 - Draw actual notehead--stem edges in one color and beam--stem edges in a
   second color.
 - Draw small node markers only where needed to distinguish the two edge
   families.
 - Do not include unrelated relations or the cluttered full debug overlay.
 
-### Panel (d): graph-only reconstruction
+### Panel (e): graph-only reconstruction
 
 - Remove the image background and redraw only the selected detected objects
   and their actual typed edges in normalized local coordinates.
-- Preserve the same left-to-right geometry as panels (b) and (c).
+- Preserve the same left-to-right geometry as panels (a)--(d).
 - Label the two edge types once in a compact legend.
 - This panel is a visualization of the stored relation graph, not a manually
   corrected score and not a direct notehead--beam predictor.
@@ -91,9 +104,11 @@ local panels.
 
 - Use Times New Roman for every generated label, legend, and panel marker.
 - Use restrained, colorblind-safe colors with one consistent mapping across
-  panels (b)--(d).
+  panels (b)--(e).
 - Keep the raster score image grayscale and use vector annotations in the PDF.
 - Avoid gradients, shadows, heavy borders, and per-object text labels.
+- Keep the five-panel strip below approximately one quarter of the text height,
+  including panel titles and legend.
 - Use at most one decimal place for the selection score if it appears in the
   figure; exact values remain in the caption or prose.
 
@@ -105,7 +120,7 @@ In `sections/experiments.tex`:
   qualitative `figure*`;
 - rename the visualization subsection to describe qualitative intermediate
   evidence and typed reconstruction;
-- add a short paragraph explaining what panels (a)--(d) show;
+- add a short paragraph explaining what panels (a)--(e) show;
 - retain the existing statement that SAM2 has no verified end-metric benefit;
 - do not claim perfect segmentation or deployment-ready transcription.
 
@@ -122,12 +137,12 @@ All figure files remain under `paper/aaai27/figure/`; all tables remain under
 ## Proposed caption
 
 "Qualitative evidence from the Debussy system with the highest full-pipeline
-Event-F1 (`test_0006`, 24.473). (a) Accepted notehead, stem, and beam detections,
-with the selected local group highlighted. (b) Actual box-prompted SAM2 masks
-on the selected noteheads and beam. (c) Stored notehead--stem and beam--stem
-relations over the same crop. (d) The corresponding graph-only reconstruction.
-Masks expose intermediate geometry; the ablation results do not establish an
-endpoint-metric gain from SAM2."
+Event-F1 (`test_0006`, 24.473). The same local beam group is followed through
+(a) staff localization, (b) accepted notehead, stem, and beam detections,
+(c) actual box-prompted SAM2 masks, (d) stored notehead--stem and beam--stem
+relations, and (e) graph-only reconstruction. Masks expose intermediate
+geometry; the ablation results do not establish an endpoint-metric gain from
+SAM2."
 
 The LaTeX version will use typographic dashes and escaped punctuation as
 required.
@@ -157,7 +172,8 @@ preview-only images.
 4. Generate the PDF twice and verify deterministic output geometry.
 5. Compile the AAAI manuscript without missing files or undefined references.
 6. Render the figure page and inspect box density, mask alignment, relation-edge
-   visibility, Times New Roman text, clipping, and two-column legibility.
+   visibility, Times New Roman text, clipping, strip height, and two-column
+   legibility.
 7. Confirm the qualitative figure remains before the analysis/conclusion and
    the pitch--duration plot appears only in the appendix.
 8. Rebuild and independently compile a clean Overleaf ZIP.
