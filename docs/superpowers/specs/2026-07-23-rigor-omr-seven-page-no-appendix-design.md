@@ -21,17 +21,18 @@ The current fine-grained experiment subsections will be merged into compact bloc
 
 ## Figure Set
 
-The seven-page body will retain five core figures:
+The seven-page body will retain six core figures:
 
 1. RIGOR-OMR method overview.
 2. Zero-shot paired improvement forest plot.
 3. Cross-domain relation-ablation forest plot.
 4. A composite `test_0006` qualitative figure.
 5. Debussy joint, pitch-only, and duration-only recovery figure.
+6. Per-item paired Event-F1 differences for the two primary target domains.
 
 Figure 4 will use the real stored `test_0006` artifact `outputs/ijcv_repro/debussy_staff_transfer24/test_0006/visuals/v2_1_skeleton_overlay.png`, not the clipboard copy. Its top row will show the complete system-level structural overlay and mark the approved crop `(965, 390, 1170, 515)`. Its bottom row will retain the existing five local stages: staff localization, accepted symbols, SAM2 masks, typed relations, and graph-only reconstruction. The caption will state that the two stems are geometry-derived, that the graph contains notehead--stem and beam--stem edges rather than a direct notehead--beam predictor, and that SAM2 supplies inspectable intermediate geometry without a verified endpoint-metric gain.
 
-The per-item small-multiples plot, density-tertile plot, and Polish diagnostic waterfall will not remain as separate figures because their essential information is already represented by the main forest plot, compact prose, or the new structural table.
+The per-item small-multiples plot is restored because it exposes the distribution and stability hidden by the corpus-level forest plot. The density-tertile plot remains excluded because it is descriptive, lacks confidence intervals, and is weaker evidence than the paired distribution. The Polish diagnostic waterfall remains excluded because the compact ledger reports the same diagnostic ladder more efficiently.
 
 ## Ablation Compression
 
@@ -52,13 +53,14 @@ It will retain precision, recall, Event-F1, and predicted/gold ratio. The prose 
 | Former appendix material | Main-paper treatment |
 | --- | --- |
 | Complete 16-row factorial table | Losslessly collapsed into the five-row A/B-gated factorial table, including predicted/gold ratios. |
-| Per-item zero-shot differences | Removed as a redundant figure; the main paired forest plot retains corpus differences, confidence intervals, and wins/ties/losses. |
+| Per-item zero-shot differences | Restored in the main paper to expose page/system-level dispersion and paired stability beyond the aggregate forest plot. |
 | Pitch/duration recovery and partial-match counts | Moved into the main text with `debussy_binding_gap.pdf`; retain RIGOR-OMR/SMT/Zeus marginal F1 values and the 527 pitch-correct/duration-wrong and 760 duration-correct/pitch-wrong counts. |
-| Polish structural diagnostic ledger | Condensed to a four-row main-text table: canonical SER 95.9589, staff-constrained 91.7498, page-constrained 85.2584, and pitch--duration rebinding 77.1959. The latter three rows remain explicitly labeled privileged diagnostic lower bounds. Legacy-to-canonical change of 0.1778 points is stated in prose. Low-coverage R3 and invalid cross-page matching are omitted from the primary table but their exclusion is explained. |
+| Polish structural diagnostic ledger | Condensed to a four-row main-text table: canonical SER 95.9589, staff-constrained 91.7498, page-constrained 85.2584, and pitch--duration rebinding 77.1959. The latter three rows remain explicitly labeled privileged diagnostic lower bounds. Legacy-to-canonical change of 0.1778 points is stated in prose. The prose also retains the R3 value/coverage and the invalid cross-page mathematical reference while clearly excluding both from deployable conclusions. |
 | Complete relation-effect scores | Main relation table retains all seven ablations, full and ablated Event-F1, differences, and 95% intervals. |
-| Relation inventory | Moved into one compact reproducibility sentence reporting edge/page counts for Debussy, GrandStaff, and OLiMPiC, together with 10,000 bootstrap resamples, seed 20260720, and 200/200 completion gates. |
+| Relation inventory | Restored as a compact main-text table reporting edge/page counts for Debussy, GrandStaff, and OLiMPiC, including ledger--note counts. The adjacent prose retains 10,000 bootstrap resamples, seed 20260720, and 200/200 completion gates. |
 | Density tertiles | Removed as exploratory, non-confirmatory evidence without confidence intervals. |
-| Oracle-diagnostics table | Replaced by the validated marginal pitch/duration projection figure and partial-match counts; no target-annotation oracle is presented as deployable performance. |
+| Oracle-diagnostics table | Replaced by the validated marginal pitch/duration projection figure and partial-match counts; count-correct values (11.118/5.562/9.234) are retained in prose. No target-annotation oracle is presented as deployable performance. |
+| Dataset-role table | Restored in compact one-column form so target-domain type, sample count, and experimental role are visible without reconstructing them from prose. |
 
 ## Table Set
 
@@ -69,8 +71,23 @@ The main paper will use compact tables for:
 3. the collapsed A/B-gated factorial ablation;
 4. complete relation-family ablations;
 5. the four-row Polish structural diagnostic ladder.
+6. dataset/domain roles and sample counts;
+7. relation inventories as edge-count / affected-page pairs.
 
-The standalone dataset-role table may be removed if page pressure remains; its sample counts and roles will be retained in the setup paragraph. Table captions will carry definitions that otherwise require separate prose.
+The dataset-role and relation-inventory tables are protected while filling the seventh content page. Table captions will carry definitions that otherwise require separate prose.
+
+## Seven-Page Fill Amendment
+
+The current compiled draft ends its non-reference content on page 6 and begins references in the second column of that page. The revision will use the remaining approximately 1.2--1.4 pages for non-redundant evidence, then force the bibliography to begin on page 8. Pages 8--9 must contain references only, and the total PDF must not exceed nine pages.
+
+The fill order is fixed:
+
+1. restore the per-item paired-difference figure;
+2. restore the compact dataset-role and relation-inventory tables;
+3. add count-correct, R3, cross-page-reference, and ledger-edge audit values in concise prose;
+4. adjust only spacing, float placement, and redundant narration to make the conclusion finish on page 7.
+
+The density-tertile figure and Polish waterfall are not fallback padding. If space remains after the protected additions, it will be used for protocol or implementation detail already supported by the code and artifacts, not for unsupported claims or enlarged decorative figures.
 
 ## File and Package Changes
 
@@ -94,11 +111,10 @@ The revision is acceptable only when all of the following hold:
 
 - the focused qualitative-figure tests pass;
 - `latexmk -g -pdf -interaction=nonstopmode -halt-on-error main.tex` succeeds;
-- pages 1--7 contain all non-reference content and no content section begins or continues on page 8;
-- any pages after page 7 contain references only;
+- pages 1--7 contain all non-reference content, with the conclusion ending on page 7;
+- the bibliography begins on page 8 and pages 8--9 contain references only;
 - the PDF contains no appendix heading, appendix figure/table labels, or references to an appendix;
 - all figure/table references resolve and the final log has no undefined citations or references;
 - Figure 4 is readable at AAAI double-column width and uses embedded Times New Roman text;
 - the final PDF contains no unembedded or Type 3 fonts;
 - a clean ZIP contains only reachable submission files and independently compiles to the same page structure.
-
