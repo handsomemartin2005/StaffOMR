@@ -129,3 +129,15 @@ The revision is acceptable only when all of the following hold:
 - Figure 4 is readable at AAAI double-column width and uses embedded Times New Roman text;
 - the final PDF contains no unembedded or Type 3 fonts;
 - a clean ZIP contains only reachable submission files and independently compiles to the same page structure.
+
+## Standard-Float Correction for Pages 5--7
+
+The deterministic float-page design above is superseded because its `figure*[p]`, `\FloatBarrier`, and `strip` combination interrupts normal two-column flow: page 5 ends after Figure 2, page 6 becomes a float-only page, and page 7 becomes a monolithic full-width box. The correction must use the AAAI template's standard float mechanism instead of manually composing whole pages.
+
+- Figure 3 and Figure 4 remain separate full-width figures, declared as standard `figure*` floats with top placement. They may share page 6, but neither may request a float-only page.
+- Figure 5 remains a landscape, full-width `figure*` at the top of page 7.
+- Figure 6 returns to a normal one-column `figure`; the Polish table, Limitations, and Conclusion remain ordinary two-column content.
+- `\FloatBarrier`, `strip`, `cuted`, full-page minipages, and conclusion inclusion inside Experiments are removed.
+- `main.tex` owns the normal section order again: Experiments, Conclusion, then a page break and References.
+- Page 5 must continue with experiment prose below Figure 2 instead of ending with a large blank region. Pages 6--7 must not be vertically centered float pages.
+- No experimental value, table row, figure content, or claim is removed by this correction, and no ZIP archive is created or modified.

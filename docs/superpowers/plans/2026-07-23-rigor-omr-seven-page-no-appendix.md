@@ -287,3 +287,37 @@ Expected: page 6 contains the two full-width quantitative visualizations without
 - [ ] **Step 6: Verify without rebuilding the ZIP**
 
 Run the focused qualitative tests, inspect `main.log`, and run `pdffonts main.pdf`. Expected: no undefined references/citations, missing files, or overfull boxes; no Type 3 or unembedded fonts. Copy `main.pdf` to `RIGOR_OMR_AAAI27_7PAGE_preview.pdf`. Do not create or modify any ZIP archive.
+
+---
+
+### Task 8: Replace forced float pages with standard AAAI flow
+
+**Files:**
+- Modify: `paper/aaai27/head.tex`
+- Modify: `paper/aaai27/main.tex`
+- Modify: `paper/aaai27/sections/experiments.tex`
+- Regenerate: `paper/aaai27/RIGOR_OMR_AAAI27_7PAGE_preview.pdf`
+
+**Interfaces:**
+- Consumes: the validated landscape qualitative figure and all existing experiment prose, tables, labels, and numeric results.
+- Produces: standard two-column AAAI flow with no float-only pages or large page-5 gap.
+
+- [ ] **Step 1: Record the failing layout evidence**
+
+Render pages 5--7 and extract their text. Confirm that page 5 ends immediately after Figure 2, page 6 contains only Figure 3/4, and page 7 is a `strip`-composed page. Search `experiments.tex` for `figure*[p]`, `\FloatBarrier`, and `strip` to identify the causal controls.
+
+- [ ] **Step 2: Restore standard float environments**
+
+Remove `cuted` from `head.tex`. Replace the grouped `[p]` block with separate `figure*[!t]` environments for Figure 3 and Figure 4. Replace the qualitative `strip` with `figure*[!t]`, and make the binding plot a one-column `figure[!t]`. Leave all labels and figure files unchanged.
+
+- [ ] **Step 3: Restore standard section ownership**
+
+Move `\input{sections/conclusion}` back to `main.tex` after Experiments. Remove that input from the right-column minipage and dissolve both diagnostic minipages into ordinary prose, figure, table, Limitations, and Conclusion flow.
+
+- [ ] **Step 4: Compile and render pages 5--8**
+
+Run `latexmk -g -pdf -interaction=nonstopmode -halt-on-error main.tex`, then render pages 5--8. Expected: page 5 continues with experiment prose, Figures 3/4 appear as top-aligned full-width figures, Figure 5 spans both columns at the top of page 7, the remaining content flows in normal columns, and References begins on page 8.
+
+- [ ] **Step 5: Run final static and regression gates**
+
+Run `$env:PYTHONPATH='.'; pytest tests/test_build_paper_qualitative_figure.py -q`, inspect the log for overfull/undefined diagnostics, and run `pdffonts`. Expected: `2 passed`, no blocking LaTeX diagnostics, and no Type 3 or unembedded fonts. Update only the preview PDF; do not create or modify a ZIP.
