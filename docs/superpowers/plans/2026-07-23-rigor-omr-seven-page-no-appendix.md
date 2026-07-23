@@ -234,3 +234,56 @@ Render pages 6--9 with `pdftoppm`, inspect float order and whitespace, and run `
 - [ ] **Step 6: Rebuild and independently compile the Overleaf ZIP**
 
 Stage only files reachable from `main.tex`, plus the style, bibliography, and reproducibility checklist sources. Include the new figure and two tables; exclude Appendix, density/Polish diagnostic figures, auxiliaries, previews, and old archives. Extract into a fresh temporary directory and compile from zero. Expected: the extracted package reproduces the same nine-page boundary.
+
+---
+
+### Task 7: Rebalance pages 6--7 and restore the wide qualitative figure
+
+**Files:**
+- Modify: `tests/test_build_paper_qualitative_figure.py`
+- Modify: `tools/build_paper_evidence_figures.py`
+- Modify: `paper/aaai27/head.tex`
+- Modify: `paper/aaai27/sections/experiments.tex`
+- Regenerate: `paper/aaai27/figure/debussy_qualitative_pipeline.pdf`
+- Regenerate: `paper/aaai27/RIGOR_OMR_AAAI27_7PAGE_preview.pdf`
+
+**Interfaces:**
+- Consumes: the six validated result figures and the current eight-page PDF.
+- Produces: balanced pages 6--7, with two full-width quantitative figures on page 6 and the approved full-width `test_0006` landscape figure on page 7.
+
+- [ ] **Step 1: Restore the landscape qualitative-figure contract**
+
+Change the focused test to require a generated preview ratio between `2.0` and `3.5` and height at least `500` pixels. Run:
+
+```powershell
+$env:PYTHONPATH='.'; python -m pytest -q tests/test_build_paper_qualitative_figure.py::test_build_qualitative_pipeline_writes_overview_and_local_stages
+```
+
+Expected: FAIL because the current single-column preview ratio is approximately 1.0.
+
+- [ ] **Step 2: Restore the approved full-width renderer**
+
+Use a `7.0 x 2.78` inch figure with the full-system overlay across the first row and five aligned local panels across the second row. Keep the existing crop, masks, typed relations, graph content, and Times New Roman font settings. Run the focused test suite and expect `2 passed`.
+
+- [ ] **Step 3: Group the two quantitative visualizations on page 6**
+
+Replace the independent `figure*` environments for the per-item plot and relation forest with one full-width float-page block containing two full-width minipages. Each minipage keeps its own `\captionof{figure}` and label, so Figure 3 and Figure 4 remain separately numbered. Flush this grouped block before the qualitative subsection.
+
+- [ ] **Step 4: Place the qualitative visualization deterministically on page 7**
+
+Load `cuted` and `balance` in `paper/aaai27/head.tex`. Place the landscape `test_0006` image in a non-floating `strip` block at the top of the final content page. Continue with binding analysis, Polish diagnostics, limitations, and conclusion in balanced columns. Keep `\clearpage` before the bibliography.
+
+- [ ] **Step 5: Compile and inspect pages 5--8**
+
+Run:
+
+```powershell
+latexmk -g -pdf -interaction=nonstopmode -halt-on-error main.tex
+pdftoppm -f 5 -l 8 -png -r 150 main.pdf tmp/pdfs/final-layout/page
+```
+
+Expected: page 6 contains the two full-width quantitative visualizations without empty columns; page 7 contains the wide qualitative figure and balanced final prose; Conclusion is on page 7; References begins on page 8.
+
+- [ ] **Step 6: Verify without rebuilding the ZIP**
+
+Run the focused qualitative tests, inspect `main.log`, and run `pdffonts main.pdf`. Expected: no undefined references/citations, missing files, or overfull boxes; no Type 3 or unembedded fonts. Copy `main.pdf` to `RIGOR_OMR_AAAI27_7PAGE_preview.pdf`. Do not create or modify any ZIP archive.
