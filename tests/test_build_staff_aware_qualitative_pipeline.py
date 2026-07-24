@@ -46,6 +46,10 @@ def test_prompt_marker_groups_include_retained_and_suppressed_negatives() -> Non
 def test_build_writes_single_page_pdf_and_renderable_preview(tmp_path: Path) -> None:
     paths = [Path(path) for path in figure.build(tmp_path)]
 
+    source = (figure.ROOT / "tools/build_staff_aware_qualitative_pipeline.py").read_text(encoding="utf-8")
+    assert "beam: 3 staff-line negatives suppressed" not in source
+    assert 'label="staff-line negative"' in source
+    assert 'label="suppressed negative"' in source
     assert {path.suffix for path in paths} == {".png", ".pdf"}
     assert all(path.exists() and path.stat().st_size > 0 for path in paths)
     with Image.open(next(path for path in paths if path.suffix == ".png")) as preview:

@@ -8,6 +8,7 @@ from typing import Any, Mapping
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import to_rgb
+from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 from PIL import Image
@@ -238,7 +239,7 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
         case["beam_id"]: BEAM_COLOR,
     }
 
-    fig = plt.figure(figsize=(7.0, 2.78))
+    fig = plt.figure(figsize=(7.0, 2.95))
     grid = fig.add_gridspec(2, 5, height_ratios=(1.0, 0.92), hspace=0.10, wspace=0.035)
     overview_ax = fig.add_subplot(grid[0, :])
     overview_ax.imshow(overview)
@@ -274,25 +275,36 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
     local_staff = min(case["staves"], key=lambda staff: abs(np.mean(staff["lines"]) - 0.5 * (y0 + y1)))
     for y in local_staff["lines"]:
         axes[0].plot([x0, x1], [y, y], color=STAFF_COLOR, linewidth=0.65, alpha=0.72)
-    for symbol_id in (*case["notehead_ids"], case["beam_id"]):
+    for symbol_id in case["notehead_ids"]:
         prompt = case["mask_records"][symbol_id]["prompt"]
         _draw_box(axes[0], prompt["detector_box"], color="#666666", linewidth=0.55, linestyle=":")
         _draw_box(axes[0], prompt["adaptive_box"], color=colors[symbol_id], linewidth=1.0, linestyle="--")
         if prompt["positive_points"]:
             px, py = zip(*prompt["positive_points"])
-            axes[0].scatter(px, py, s=10, c=POSITIVE_COLOR, edgecolors="white", linewidths=0.35, zorder=6)
-        if prompt["negative_points"]:
-            nx, ny = zip(*prompt["negative_points"])
-            axes[0].scatter(nx, ny, s=12, c=NEGATIVE_COLOR, marker="x", linewidths=0.7, zorder=6)
-    axes[0].text(
-        0.02,
-        0.03,
-        "beam: 3 staff-line negatives suppressed",
-        transform=axes[0].transAxes,
-        fontsize=4.8,
-        color="#333333",
-        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.82, "pad": 0.5},
-    )
+            axes[0].scatter(px, py, s=7, c=POSITIVE_COLOR, edgecolors="white", linewidths=0.30, zorder=9)
+    for symbol_id, marker_group in case["prompt_markers"].items():
+        prompt = case["mask_records"][symbol_id]["prompt"]
+        _draw_box(axes[0], prompt["detector_box"], color="#666666", linewidth=0.55, linestyle=":")
+        _draw_box(axes[0], prompt["adaptive_box"], color=BEAM_COLOR, linewidth=1.0, linestyle="--")
+        if marker_group["positive"]:
+            px, py = zip(*marker_group["positive"])
+            axes[0].scatter(px, py, s=7, c=POSITIVE_COLOR, edgecolors="white", linewidths=0.30, zorder=9)
+        if marker_group["retained_negative"]:
+            nx, ny = zip(*marker_group["retained_negative"])
+            axes[0].scatter(nx, ny, s=8, c=NEGATIVE_COLOR, marker="X", linewidths=0.35, zorder=7)
+        if marker_group["suppressed_negative"]:
+            sx, sy = zip(*marker_group["suppressed_negative"])
+            axes[0].scatter(
+                sx,
+                sy,
+                s=13,
+                facecolors="white",
+                edgecolors=NEGATIVE_COLOR,
+                marker="o",
+                linewidths=0.60,
+                zorder=7,
+            )
+            axes[0].scatter(sx, sy, s=6, c=NEGATIVE_COLOR, marker="x", linewidths=0.55, zorder=8)
 
     for symbol_id in selected_ids:
         _draw_box(axes[1], symbols[symbol_id]["bbox"], color=colors[symbol_id], linewidth=1.0, linestyle="-")
@@ -332,16 +344,41 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
         sx, sy = _center(symbols[stem_id])
         axes[4].plot([sx, bx], [sy, by], color=BEAM_COLOR, linewidth=1.4)
 
+    suppressed_handle = (
+        Line2D([], [], color=NEGATIVE_COLOR, marker="o", markerfacecolor="white", linestyle="none", markersize=4.3),
+        Line2D([], [], color=NEGATIVE_COLOR, marker="x", linestyle="none", markersize=3.2, label="suppressed negative"),
+    )
     handles = [
         Patch(facecolor=HEAD_COLOR, label="notehead"),
         Patch(facecolor=STEM_COLOR, label="stem"),
         Patch(facecolor=BEAM_COLOR, label="beam"),
         Line2D([], [], color=POSITIVE_COLOR, marker="o", linestyle="none", markersize=3.2, label="positive prompt"),
+        Line2D([], [], color=NEGATIVE_COLOR, marker="X", linestyle="none", markersize=3.5, label="staff-line negative"),
+        suppressed_handle,
         Line2D([], [], color=HEAD_COLOR, linewidth=1.5, label="notehead-stem"),
         Line2D([], [], color=BEAM_COLOR, linewidth=1.5, label="beam-stem"),
     ]
-    fig.legend(handles=handles, frameon=False, ncol=6, loc="lower center", bbox_to_anchor=(0.5, -0.005), fontsize=5.7)
-    fig.subplots_adjust(left=0.01, right=0.995, top=0.93, bottom=0.13)
+    labels = [
+        "notehead",
+        "stem",
+        "beam",
+        "positive prompt",
+        "staff-line negative",
+        "suppressed negative",
+        "notehead-stem",
+        "beam-stem",
+    ]
+    fig.legend(
+        handles=handles,
+        labels=labels,
+        handler_map={tuple: HandlerTuple(ndivide=1)},
+        frameon=False,
+        ncol=4,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.005),
+        fontsize=5.6,
+    )
+    fig.subplots_adjust(left=0.01, right=0.995, top=0.93, bottom=0.18)
 
     paths: list[str] = []
     for suffix in ("png", "pdf"):
