@@ -1,0 +1,22 @@
+\begin{center}
+\begin{minipage}{\columnwidth}
+\captionof{table}{Complete relation ablation under frozen visual predictions. $\Delta$ is full minus ablated Event-F1; bold intervals exclude zero.}
+\label{tab:edges}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{1.0pt}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Target & Removed & Full & $-$edge & $\Delta$ [95\% CI] \\
+\midrule
+Deb. & note--stem & 8.517 & 7.047 & \textbf{1.470 [0.282,2.647]} \\
+Deb. & beam--stem & 8.517 & 7.114 & \textbf{1.403 [0.212,2.607]} \\
+Deb. & slur/tie & 8.517 & 8.517 & 0.000 [0.000,0.000] \\
+GS & note--stem & 8.887 & 8.217 & \textbf{0.669 [0.013,1.321]} \\
+GS & beam--stem & 8.887 & 8.304 & 0.583 [$-0.067$,1.246] \\
+OLi. & note--stem & 9.624 & 7.713 & \textbf{1.911 [1.472,2.358]} \\
+OLi. & beam--stem & 9.624 & 8.082 & \textbf{1.543 [1.132,1.972]} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{center}

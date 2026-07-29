@@ -1,0 +1,10 @@
+numpy
+Pillow
+opencv-python
+scipy
+scikit-image
+lxml
+rapidfuzz
+torch
+torchvision
+pytest

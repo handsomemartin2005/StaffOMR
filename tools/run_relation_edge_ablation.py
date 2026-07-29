@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import copy
-import importlib.util
 import json
 import sys
 from collections import Counter, defaultdict
@@ -38,31 +37,15 @@ def filter_relation_type(shapes: Mapping[str, Any], removed_type: str) -> dict[s
 
 
 def load_archived_module() -> Any:
-    tools311 = ROOT / "tools_py311"
-    if str(tools311) not in sys.path:
-        sys.path.insert(0, str(tools311))
-    path = tools311 / "run_abcd_module_ablation.pyc"
-    spec = importlib.util.spec_from_file_location("_paper_evidence_abcd", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Cannot load archived ablation module: {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    from tools import run_abcd_module_ablation
+
+    return run_abcd_module_ablation
 
 
 def load_assemble_module() -> Any:
-    tools311 = ROOT / "tools_py311"
-    if str(tools311) not in sys.path:
-        sys.path.insert(0, str(tools311))
-    path = tools311 / "assemble_v2_1_notes.pyc"
-    spec = importlib.util.spec_from_file_location("_paper_evidence_assemble", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Cannot load archived note assembler: {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    from tools import assemble_v2_1_notes
+
+    return assemble_v2_1_notes
 
 
 def build_notes_from_shapes(assemble_module: Any, shapes: Mapping[str, Any]) -> dict[str, Any]:
