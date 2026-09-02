@@ -1,0 +1,20 @@
+\begin{center}
+\begin{minipage}{\columnwidth}
+\captionof{table}{Debussy factorial ablation. A/B form the perception gate; C is SAM2 and D is relation reasoning.}
+\label{tab:factorial}
+\centering
+\small
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Variant & Prec. & Rec. & F1 & Pred./Gold \\
+\midrule
+$AB{+}C{+}D$ & 7.058 & \textbf{10.737} & 8.517 & 1.521 \\
+$AB{+}D$ & \textbf{7.113} & 10.695 & \textbf{8.544} & 1.504 \\
+$AB{+}C$ & 8.437 & 2.568 & 3.938 & 0.304 \\
+$AB$ & 8.437 & 2.568 & 3.938 & 0.304 \\
+$A{=}0$ or $B{=}0$ (12) & 0.000 & 0.000 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{center}

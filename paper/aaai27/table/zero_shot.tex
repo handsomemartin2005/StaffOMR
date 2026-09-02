@@ -1,0 +1,22 @@
+\begin{center}
+\begin{minipage}{\columnwidth}
+\captionof{table}{Zero-shot pitch--duration content recovery on Polish and Debussy.}
+\label{tab:zero-shot}
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Target & Method & Prec. & Rec. & F1 & Pred./Gold \\
+\midrule
+Polish & RIGOR-OMR & \textbf{18.734} & \textbf{15.700} & \textbf{17.083} & 0.838 \\
+ & SMT & 2.733 & 5.879 & 3.731 & 2.151 \\
+ & Zeus & 3.971 & 0.800 & 1.332 & 0.202 \\
+\midrule
+Debussy & RIGOR-OMR & 7.058 & \textbf{10.737} & \textbf{8.517} & 1.521 \\
+ & SMT & 1.277 & 5.432 & 2.068 & 4.252 \\
+ & Zeus & \textbf{7.463} & 8.126 & 7.781 & 1.089 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{center}

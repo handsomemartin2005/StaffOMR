@@ -1,0 +1,20 @@
+\begin{center}
+\begin{minipage}{\columnwidth}
+\captionof{table}{Retained artifacts used to audit the modular prediction path.}
+\label{tab:artifact-audit}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.3pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Stage & Retained evidence & Audited role \\
+\midrule
+Staff & lines, spacing, regions & normalization \\
+Detection & class, box, confidence & symbol proposal \\
+Mask & binary mask, descriptors & shape/endpoints \\
+Relation & type, endpoints, score & event binding \\
+Decoder & semantic JSON, MusicXML & metric/export \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{center}

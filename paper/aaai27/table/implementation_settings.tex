@@ -1,0 +1,21 @@
+\begin{center}
+\begin{minipage}{\columnwidth}
+\captionof{table}{Frozen implementation settings for the reported modular runs.}
+\label{tab:implementation-settings}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Component & Setting \\
+\midrule
+Detector & DEIM--D-FINE; 58 classes; $640\!\times\!640$ input \\
+Filtering & score $0.05$; class-wise NMS IoU $0.50$ \\
+Debussy & auto page mode; at most 1,000 detections \\
+GrandStaff & $1280$-px tiles; $0.25$ overlap; at most 2,000 \\
+Mask refiner & frozen SAM2.1 Hiera-Tiny; box-only prompt \\
+Reconstruction & deterministic typed local rules \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{center}

@@ -1,0 +1,112 @@
+% !TeX program = pdflatex
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[hyphens]{url}
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\pdfinfo{/Title (RIGOR-OMR Technical Supplement) /Author () /Subject () /Keywords ()}
+
+\title{RIGOR-OMR: Technical Supplement}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+\maketitle
+
+\section{Scope and Package Organization}
+This supplement records implementation and evaluation details that support the paper while leaving the main paper self-contained. The accompanying code-and-data archive contains only anonymous source files, tests, run scripts, table inputs, and representative result records. It intentionally excludes model weights, third-party datasets, generated caches, compiled Python bytecode, version-control metadata, and links to external repositories.
+
+The archive has four top-level parts. \texttt{tools/} contains preprocessing, inference, relation construction, reconstruction, evaluation, and figure-generation programs. \texttt{tests/} contains focused regression tests. \texttt{paper\_tables/} contains the numerical LaTeX table bodies used by the manuscript. \texttt{result\_records/} contains compact JSON or JSONL summaries sufficient to audit the reported aggregate computations. A manifest gives a SHA-256 digest for every archived file.
+
+\section{Deterministic Modular Pipeline}
+Let a score page be an image $I$. The implementation executes the following stages.
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item Estimate five-line staff groups by horizontal projection and connected-component filtering. For staff $k$, define the robust spacing $s_k$ as the median distance between adjacent detected lines.
+  \item Run the frozen 58-class detector at $640\!\times\!640$. Full-page or overlapping tiled inference is selected by page geometry. Merge predictions by class-wise non-maximum suppression at IoU $0.50$ and retain scores at least $0.05$.
+  \item Assign every retained box to a staff region and express its center, size, and attachment distances in units of $s_k$.
+  \item Refine each box with frozen SAM2.1 Hiera-Tiny using the box-only prompt. Empty refinement falls back to the detector box; no symbol is dropped solely because refinement fails.
+  \item Convert masks to class-appropriate primitives. Area-like classes retain polygons; elongated classes retain pruned skeletons, support lines, and endpoints.
+  \item Construct typed candidate edges. Notehead--stem candidates use endpoint distance at most $\max(8\text{ px},1.35s_k)$; beam--stem candidates use distance at most $\max(5\text{ px},0.45s_k)$. A beam group requires at least two stems. Class compatibility and conflict pruning select a consistent local relation set.
+  \item Decode pitch from the clef-conditioned staff grid and duration from attached stems, beams, flags, and dots. Group staves into systems, infer shared barline partitions, cluster staff-normalized horizontal positions into onsets, form compatible chords, and serialize deterministically in system--measure--onset--staff order.
+\end{enumerate}
+
+Once detections, masks, and typed edges have been cached, relation ablations remove one edge family and rerun only the deterministic decoder. They do not retrain a model or rerun the detector.
+
+\section{Frozen Settings}
+\begin{table}[h]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.28\columnwidth}p{0.64\columnwidth}@{}}
+\toprule
+Component & Frozen setting \\
+\midrule
+Detector & DEIM--D-FINE, 58 classes, $640\!\times\!640$ input \\
+Detection filter & score $0.05$, class-wise NMS IoU $0.50$ \\
+Debussy & automatic page mode, at most 1,000 detections \\
+GrandStaff & 1280-pixel tiles, 0.25 overlap, at most 2,000 \\
+Mask refinement & frozen SAM2.1 Hiera-Tiny, box-only prompt \\
+Notehead--stem radius & $\max(8\text{ px},1.35s_k)$ \\
+Beam--stem radius & $\max(5\text{ px},0.45s_k)$ \\
+Reconstruction & deterministic typed local rules \\
+Bootstrap & 10,000 paired resamples; seed 20260720 \\
+\bottomrule
+\end{tabular}
+\caption{Settings that distinguish the reported modular runs.}
+\end{table}
+
+The main modular pipeline is deterministic after the frozen detector outputs are loaded. Each reported held-out item is processed once per method or ablation variant. Sampling is used only for the paired bootstrap analysis; the fixed seed and resample count above reproduce its intervals.
+
+\section{Evaluation Protocol}
+All compared methods receive the same held-out images. Failed outputs remain in the denominator. To compare heterogeneous structured outputs, valid outputs are projected to a multiset of pitch--duration events. If $M$ is multiset intersection size and $P,G$ are predicted and reference event counts, then
+\begin{align*}
+  \mathrm{Precision}&=M/P, & \mathrm{Recall}&=M/G,\\
+  \mathrm{Event\mbox{-}F1}&=2M/(P+G).&&
+\end{align*}
+Duplicates therefore remain countable errors. Pitch tokens include the rest token; durations are rationalized as \texttt{duration/divisions}. This order-invariant measure isolates content recovery. OLiMPiC additionally uses symbol error rate and normalized tree-edit distance to assess order and hierarchy.
+
+Paired uncertainty is computed over pages or systems. For each of 10,000 bootstrap samples, held-out items are sampled with replacement and the corpus score difference is recomputed. A comparison is called significant only when the two-sided 95\% interval excludes zero. The archive retains the per-item records used for these computations.
+
+\section{Datasets, Runs, and Leakage Controls}
+\begin{table}[h]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.19\columnwidth}p{0.28\columnwidth}rp{0.30\columnwidth}@{}}
+\toprule
+Dataset & Domain & $N$ & Role \\
+\midrule
+Polish & historical scans & 24 & comparison \\
+Debussy & unseen editions & 24 & comparison and ablation \\
+GrandStaff & clean rendered & 200 & relation transfer \\
+OLiMPiC & mixed systems & 200 & strict and relation evaluation \\
+\bottomrule
+\end{tabular}
+\caption{Held-out evaluation domains.}
+\end{table}
+
+No target test image is used for training or checkpoint selection. Dataset adapters and runtime settings are fixed before test evaluation. The detector, mask refiner, and optional clef classifier are frozen. Privileged diagnostic rows described in the paper are lower bounds only and are not deployable outputs; they are not mixed with the main zero-shot scores.
+
+\section{Reproduction Entry Points}
+The archive is designed to be unpacked into an empty working directory. The following commands perform syntax and regression checks without downloading data or weights:
+\begin{verbatim}
+python -m compileall -q tools
+\end{verbatim}
+The self-contained regression subset is run with \texttt{python -m pytest -q} followed by \path{tests/test_polish_canonical_serialization.py} and \path{tests/test_refine_masks_sam2_method_aligned.py}.
+
+The principal pipeline and analysis entry points are \path{tools/run_musicxml_full_dataset_v2_1.py}, \path{tools/refine_masks_sam2.py}, \path{tools/extract_symbol_shapes_v2_1.py}, \path{tools/assemble_v2_1_notes.py}, \path{tools/export_v2_1_semantics.py}, \path{tools/run_cross_dataset_relation_edge_ablation.py}, \path{tools/evaluate_omr_musicxml_cer_ser_ler.py}, and \path{tools/build_paper_evidence_figures.py}.
+Each program provides command-line help. Dataset roots, checkpoints, prediction caches, and output directories are supplied as arguments rather than encoded as personal machine paths. The representative result records can be inspected and recomputed without access to licensed images or model weights.
+
+\section{Environment and Reproducibility Boundaries}
+The code targets Python 3.11. Core CPU-side utilities use NumPy, Pillow, OpenCV, SciPy, scikit-image, and lxml; learned inference additionally uses PyTorch, torchvision, the detector implementation, and SAM2. Exact accelerator throughput depends on hardware and is not a claim of the paper. Third-party packages, checkpoints, and datasets are excluded from the archive because of size or redistribution terms.
+
+The principal reproducibility boundary is therefore explicit: the archive supports source inspection, deterministic postprocessing, metric recomputation from representative records, regression testing, and numerical table auditing. Reproducing detector training or every full-image inference run additionally requires the cited public datasets and third-party model assets. The paper does not claim matched-hardware efficiency, engraving-ready MusicXML, or complete voice and tuplet decoding.
+
+\end{document}

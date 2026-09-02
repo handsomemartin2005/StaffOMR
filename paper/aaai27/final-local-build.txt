@@ -1,0 +1,151 @@
+﻿Initial Win CP for (console input, console output, system): (CP936, CP65001, CP936)
+I changed them all to CP936
+Rc files read (in order):
+  NONE
+Latexmk: This is Latexmk, John Collins, 9 March 2026. Version 4.88.
+Force everything to be remade.
+Latexmk: applying rule 'bibtex main'...
+Rule 'bibtex main':  Reasons for rerun
+Category 'other':
+  Rerun of 'bibtex main' forced or previously required:
+    Reason or flag: 'go_mode'
+
+------------
+Run number 1 of rule 'bibtex main'
+------------
+------------
+Running 'bibtex  "main.aux"'
+------------
+This is BibTeX, Version 0.99e (TeX Live 2026)
+The top-level auxiliary file: main.aux
+The style file: aaai2027.bst
+Database file #1: reference.bib
+Latexmk: applying rule 'pdflatex'...
+Rule 'pdflatex':  Reasons for rerun
+Category 'other':
+  Rerun of 'pdflatex' forced or previously required:
+    Reason or flag: 'go_mode'
+
+------------
+Run number 1 of rule 'pdflatex'
+------------
+------------
+Running 'pdflatex  -interaction=nonstopmode -halt-on-error -recorder  "main.tex"'
+------------
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./main.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2026-03-20>
+(./head.tex (d:/texlive/2026/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(d:/texlive/2026/texmf-dist/tex/latex/base/size10.clo)) (./aaai2027.sty
+Conference Style for AAAI for LaTeX 2e
+(d:/texlive/2026/texmf-dist/tex/generic/iftex/iftex.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/base/fontenc.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/newtx/newtxtext.sty
+`newtxtext' v1.744, 2024/04/01 Text macros taking advantage of TeXGyre Termes a
+nd its extensions (msharpe)
+(d:/texlive/2026/texmf-dist/tex/latex/xpatch/xpatch.sty
+(d:/texlive/2026/texmf-dist/tex/latex/l3kernel/expl3.sty
+(d:/texlive/2026/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def))
+(d:/texlive/2026/texmf-dist/tex/latex/l3packages/xparse/xparse.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/etoolbox/etoolbox.sty))
+(d:/texlive/2026/texmf-dist/tex/latex/xcolor/xcolor.sty
+(d:/texlive/2026/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(d:/texlive/2026/texmf-dist/tex/latex/graphics-def/pdftex.def)
+(d:/texlive/2026/texmf-dist/tex/latex/graphics/mathcolor.ltx))
+(d:/texlive/2026/texmf-dist/tex/latex/xkeyval/xkeyval.sty
+(d:/texlive/2026/texmf-dist/tex/generic/xkeyval/xkeyval.tex
+(d:/texlive/2026/texmf-dist/tex/generic/xkeyval/xkvutils.tex
+(d:/texlive/2026/texmf-dist/tex/generic/xkeyval/keyval.tex))))
+(d:/texlive/2026/texmf-dist/tex/latex/base/textcomp.sty)
+(d:/texlive/2026/texmf-dist/tex/generic/xstring/xstring.sty
+(d:/texlive/2026/texmf-dist/tex/generic/xstring/xstring.tex))
+(d:/texlive/2026/texmf-dist/tex/latex/base/ifthen.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/carlisle/scalefnt.sty)
+(d:/texlive/2026/texmf-dist/tex/generic/kastrup/binhex.tex)
+(d:/texlive/2026/texmf-dist/tex/latex/fontaxes/fontaxes.sty
+(d:/texlive/2026/texmf-dist/tex/latex/figureversions/figureversions.sty)))
+(d:/texlive/2026/texmf-dist/tex/latex/psnfss/helvet.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/psnfss/courier.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/placeins/placeins.sty))
+(d:/texlive/2026/texmf-dist/tex/latex/graphics/graphicx.sty
+(d:/texlive/2026/texmf-dist/tex/latex/graphics/graphics.sty
+(d:/texlive/2026/texmf-dist/tex/latex/graphics/trig.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)))
+(d:/texlive/2026/texmf-dist/tex/latex/booktabs/booktabs.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(d:/texlive/2026/texmf-dist/tex/latex/amsmath/amstext.sty
+(d:/texlive/2026/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(d:/texlive/2026/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(d:/texlive/2026/texmf-dist/tex/latex/amsfonts/amssymb.sty
+(d:/texlive/2026/texmf-dist/tex/latex/amsfonts/amsfonts.sty))
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/microtype.sty
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/microtype-pdftex.def)
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/microtype.cfg))
+(d:/texlive/2026/texmf-dist/tex/latex/url/url.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/natbib/natbib.sty)
+(d:/texlive/2026/texmf-dist/tex/latex/caption/caption.sty
+(d:/texlive/2026/texmf-dist/tex/latex/caption/caption3.sty)))
+(d:/texlive/2026/texmf-dist/tex/latex/newtx/t1ntxtlf.fd) (./main.aux)
+(d:/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (d:/texlive/2026/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(d:/texlive/2026/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/mt-ptm.cfg)
+(./sections/abstract.tex) (./sections/introduction.tex
+(d:/texlive/2026/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd))
+(./sections/related_work.tex [1{d:/texlive/2026/texmf-var/fonts/map/pdftex/updm
+ap/pdftex.map}{d:/texlive/2026/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
+{d:/texlive/2026/texmf-dist/fonts/enc/dvips/tex-gyre/q-ts1.enc}])
+(./sections/methodology.tex
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/mt-cmr.cfg)
+(d:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd)
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msa.cfg)
+(d:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd)
+(d:/texlive/2026/texmf-dist/tex/latex/microtype/mt-msb.cfg) [2])
+(./sections/experiments.tex
+Underfull \vbox (badness 10000) has occurred while \output is active
+(./table/datasets.tex [3 <./figure/rigor_omr_method.png (PNG copy)>])
+(./table/zero_shot.tex) (./table/strict_olimpic.tex)
+(./table/factorial_summary.tex) [4 <./figure/zero_shot_main_results.pdf>]
+Underfull \vbox (badness 10000) has occurred while \output is active
+(./table/relation_effects.tex
+Underfull \vbox (badness 10000) has occurred while \output is active [5 <./figu
+re/per_item_difference_small_multiples.pdf> <./figure/cross_domain_relation_for
+est.pdf>]) (./table/relation_inventory.tex)
+(./table/implementation_settings.tex)
+(d:/texlive/2026/texmf-dist/tex/latex/psnfss/t1pcr.fd)
+(./table/artifact_audit.tex) [6{d:/texlive/2026/texmf-dist/fonts/enc/dvips/base
+/8r.enc} <./figure/debussy_binding_gap.pdf>]
+(./table/polish_diagnostics_compact.tex)) (./sections/conclusion.tex) [7 <./fig
+ure/debussy_qualitative_pipeline.pdf>] (./main.bbl) [8] (./main.aux) )
+(see the transcript file for additional information)<d:/texlive/2026/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmmi10.pfb><d:/texlive/2026/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmmi7.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pf
+b><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><d:/texli
+ve/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><d:/texlive/2026/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><d:/texlive/2026/texmf-dist/
+fonts/type1/public/tex-gyre/qtmr.pfb><d:/texlive/2026/texmf-dist/fonts/type1/ur
+w/courier/ucrr8a.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/newtx/ztmb.
+pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/newtx/ztmr.pfb><d:/texlive/2
+026/texmf-dist/fonts/type1/public/newtx/ztmri.pfb>
+Output written on main.pdf (8 pages, 903115 bytes).
+Transcript written on main.log.
+Latexmk: Getting log file 'main.log'
+Latexmk: Examining 'main.fls'
+Latexmk: Examining 'main.log'
+Latexmk: Found input bbl file 'main.bbl'
+Latexmk: Found input bbl file 'main.bbl'
+Latexmk: Log file says output to 'main.pdf'
+  ===Source file 'main.bbl' for 'pdflatex'
+Latexmk: Found bibliography file(s):
+  ./reference.bib
+Latexmk: All targets (main.pdf) are up-to-date
+
