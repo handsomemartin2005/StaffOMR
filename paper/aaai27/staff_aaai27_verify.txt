@@ -1,0 +1,421 @@
+           RIGOR-OMR: Relation-Aware Interpretable Geometry for Zero-Shot
+                    Cross-Domain Optical Music Recognition
+
+                                                       Anonymous submission
+
+
+
+
+                             Abstract                                    strained engraving, whereas scanned historical scores contain
+  Optical music recognition (OMR) systems achieve strong                 uneven contrast, page texture, warped systems, typography
+  performance on in-domain benchmarks, yet whether such                  changes, and more varied annotations. The output space shifts
+  results translate into plug-and-play recognition on unseen             as well: Humdrum-based encodings, Linearized MusicXML
+  score domains remains underexplored. We present RIGOR-                 (LMX), tuplets, voices, and staff markers differ in vocabulary
+  OMR (Relation-aware Interpretable Geometry for Out-of-                 and structural assumptions. General transfer-learning results
+  domain Recognition), a modular framework that leverages                predict that higher model layers become increasingly task-
+  staff-normalized geometry to guide visual symbol detection             specific (Pan and Yang 2010; Yosinski et al. 2014); for OMR,
+  and explicit relation reasoning, while reconstructing structured       the decoder and notation vocabulary are precisely the most
+  outputs without target-domain training or dataset-specific adap-       domain-specific components.
+  tation. To compare systems with heterogeneous outputs, we in-
+                                                                            This paper introduces RIGOR-OMR, short for Relation-
+  troduce a representation-agnostic pitch–duration event evalua-
+  tion protocol. On Polish Scores, RIGOR-OMR achieves 17.083             aware Interpretable Geometry for Out-of-domain Recogni-
+  Event-F1, representing relative improvements of 357.9% over            tion. Rather than relying exclusively on a source-specific
+  SMT and 1182.5% over Zeus. On Debussy, RIGOR-OMR                       autoregressive vocabulary, RIGOR-OMR exposes a modular
+  significantly outperforms SMT while performing comparably              recognition path: staff geometry establishes a normalized
+  to Zeus. Ablation studies confirm that explicit relation reason-       coordinate frame; DEIM-D-FINE detects symbols; optional
+  ing is the primary source of these improvements. Extensive             SAM2 masks refine local shape evidence; explicit relations
+  experiments across Polish Scores, Debussy, GrandStaff, and             connect noteheads, stems, and beams; and a deterministic
+  OLiMPiC establish RIGOR-OMR as an effective approach to                backend exports MusicXML or an evaluation-compatible
+  zero-shot music-content recognition under substantial domain           sequence. The intermediate artifacts make it possible to dis-
+  shift.
+                                                                         tinguish detection, pitch, duration, relation, and serialization
+                                                                         failures.
+                      1    Introduction                                     Our contributions are fourfold:
+Optical music recognition converts score images into machine-              • We formulate practical OMR applicability as zero-shot
+readable notation. Unlike ordinary character recognition,                    transfer under matched inputs, frozen target-domain de-
+the meaning of a mark depends jointly on its class, staff-                   cisions, and a common content projection, rather than
+relative position, attachment relations, voice, and reading                  extrapolating from in-domain accuracy.
+order (Calvo-Zaragoza, Jr., and Pacha 2021; Rebelo et al.                  • We introduce RIGOR-OMR, an inspectable geometry–
+2012). Modern systems increasingly treat OMR as image-                       detection–relation–reconstruction pipeline whose detector
+to-sequence prediction, using Transformer decoders to emit                   can be replaced without changing the structured backend.
+compact musical encodings (Vaswani et al. 2017; Ríos-Vila,
+Calvo-Zaragoza, and Paquet 2024; Li et al. 2023). This                     • Across Polish and Debussy, local runs against SMT and
+formulation has enabled recognition beyond monophonic                        Zeus show that RIGOR-OMR is significantly stronger than
+incipits and toward piano systems or complete pages (Ríos-                   both baselines on Polish and significantly stronger than
+Vila, Calvo-Zaragoza, and Rizo 2023; Ríos-Vila et al. 2026).                 SMT while statistically comparable to Zeus on Debussy.
+Yet the apparent progress hides a deployment problem: a                    • Full-factorial and edge-level ablations isolate explicit rela-
+model trained on one renderer, score collection, vocabulary,                 tion reasoning as the main transferable mechanism, while
+or page layout can fail sharply on another.                                  strict OLiMPiC metrics identify global ordering and hier-
+   The shift is visible before any model is run. Synthetic piano             archy as the remaining limitation.
+pages have clean backgrounds, regular spacing, and con-
+                                                                                             2    Related Work
+This is an anonymized submission for review purposes only. Dis-
+tribution, citation, or public sharing of this manuscript is strictly
+                                                                         2.1   Datasets and Modular OMR
+prohibited. Copyright and publication details will appear in the final   OMR research has historically decomposed a page into staff
+version if accepted.                                                     detection, symbol recognition, and notation reconstruction
+(Calvo-Zaragoza, Jr., and Pacha 2021; Rebelo et al. 2012).                             3    Experiments
+Dataset design reflects this decomposition. MUSCIMA++             3.1 Problem Formulation and Evaluation Protocol
+provides handwritten symbols and explicit pairwise relations,
+enabling notation-graph experiments (Jr. and Pecina 2017).        Let Ds denote the source domain used to train a recognition
+DeepScores and DeepScoresV2 provide dense synthetic an-           component and Dt = {(xti , yit )} an unseen target domain.
+notations for tiny printed objects, instance segmentation,        We study zero-shot transfer: neither model parameters nor
+and detection (Tuggener et al. 2018, 2021). Camera-PrIMuS         target-specific thresholds are selected using samples from Dt .
+supports end-to-end recognition under realistic image degra-      Each x is a piano system or page and y is structured notation.
+dation but is primarily monophonic (Calvo-Zaragoza and            The central difficulty is that methods emit heterogeneous se-
+Rizo 2018). RealScores and recent instance-segmentation           quences. We therefore project every valid output to a multiset
+studies further emphasize that real-world score images differ     of pitch–duration events and compute corpus-level precision,
+materially from synthetic renders (Shatri and Fazekas 2023,       recall, and F1. If M is the multiset intersection count, P and
+2024).                                                            G the predicted and reference event counts, then
+   Object-centric OMR benefits from detectors that preserve                                             2M
+small, dense instances. DETR introduced set prediction with                          EventF1 = 100          .                   (1)
+                                                                                                       P +G
+bipartite matching (Carion et al. 2020); RT-DETRv2, D-
+FINE, and DEIM improve multiscale sampling, localization,         This projection measures content recovery without rewarding
+and convergence (Lv et al. 2024; Peng et al. 2025; Huang          a method for its native tokenization. It deliberately ignores
+et al. 2025). Promptable segmentation offers a complementary      event order, voice, and hierarchy; we retain SER and normal-
+route from boxes to boundaries. SAM established zero-shot         ized tree-edit distance (TEDn) on OLiMPiC to measure those
+promptable segmentation (Kirillov et al. 2023), while SAM2        stricter properties.
+extended the design and improved image efficiency (Ravi              The protocol has four safeguards. First, all methods re-
+et al. 2025). RIGOR-OMR uses these models as reusable             ceive the same target images and deterministic preprocessing.
+components, not as evidence that natural-image priors alone       Second, no target test image is used for training, threshold
+understand notation semantics. DINOv2 features support            selection, or checkpoint selection. Third, empty and failed
+retrieval and crop-level auxiliary classification (Oquab et al.   outputs remain in the denominator. Fourth, all baseline values
+2024), but all final claims are based on end-output metrics       in the unified tables come from local inference and conversion,
+rather than embedding similarity.                                 rather than copied headline numbers. We use 10,000 paired
+                                                                  bootstrap resamples over pages or systems and report 95%
+                                                                  intervals for F1 differences. A difference is called significant
+2.2   End-to-End Pianoform Recognition
+                                                                  only when its interval excludes zero.
+GrandStaff introduced a large pianoform corpus and a
+sequence-recognition formulation over kern-like encodings         3.2   The RIGOR-OMR Framework
+(Ríos-Vila, Calvo-Zaragoza, and Rizo 2023). Sheet Mu-             Figure 1 summarizes the pipeline. Each stage writes in-
+sic Transformer extended image-to-sequence OMR beyond             spectable artifacts, allowing an end-output error to be traced
+monophonic transcription (Ríos-Vila, Calvo-Zaragoza, and          to geometry, detection, relation assignment, or structured
+Paquet 2024), and full-page variants combined convolu-            export.
+tional encoders, autoregressive decoders, synthetic curricu-
+lum learning, and target-domain fine-tuning (Ríos-Vila et al.     Staff Geometry Estimation Given a score image I, hori-
+2026). TrOMR likewise targets polyphonic recognition with         zontal projections and connected components identify five-
+Transformer-based decoding (Li et al. 2023). OLiMPiC intro-       line staff groups. For staff k, the line coordinates {ℓk,j }5j=1
+duced LMX, aligned MusicXML-compatible output, scanned            define the robust spacing
+evaluation systems, and a tree-aware metric (Mayer et al.
+                                                                                sk = median4j=1 (ℓk,j+1 − ℓk,j ).               (2)
+2024). These systems demonstrate strong in-domain accu-
+racy, but their results also motivate a controlled view of        The lines and inter-line half spaces form a discrete pitch
+cross-domain behavior.                                            grid Gk . We express box sizes, attachment distances, and
+                                                                  prompt offsets in units of sk , so the downstream rules remain
+2.3   Transfer and Domain Shift                                   comparable across resolution and engraving scale. The geom-
+                                                                  etry stage outputs staff regions, line coordinates, normalized
+Transfer learning studies distinguish reusable lower-level
+                                                                  symbol coordinates, and candidate pitch-grid positions.
+representations from source-specific higher layers (Pan and
+Yang 2010; Yosinski et al. 2014). Domain-adversarial training     Staff-Aware Symbol Detection The score image is pro-
+seeks features that cannot discriminate source from target        cessed by a DEIM-D-FINE detector. Its HGNetv2 backbone
+domains (Ganin et al. 2016), and domain-generalization work       and hybrid encoder produce multiscale features, while sym-
+organizes interventions into data, representation, and learning   bol queries predict class-labeled boxes (Huang et al. 2025;
+strategies (Wang et al. 2021). RIGOR-OMR studies a nar-           Peng et al. 2025). Full-page and staff-crop predictions are
+rower and practically common setting: an OMR system must          merged by class-aware non-maximum suppression. Each de-
+operate on an unseen collection without target annotations,       tection di = (bi , ci , qi ) contains a box bi , symbol class ci ,
+while appearance, layout, and output representation may shift     and confidence qi ; overlap with the estimated staff regions
+simultaneously.                                                   assigns it to a staff and maps its center to normalized grid
+Table 1: Evaluation domains. Polish and Debussy form the fair zero-shot comparison; GrandStaff and OLiMPiC additionally
+support relation ablation and strict-structure diagnosis.
+
+        Dataset             Target domain                      Unit          Test size   Role
+        Polish Scores       historical scans                   page          24          main zero-shot comparison
+        Debussy             unseen editions and layouts        system        24          comparison, factorial ablation, diagnosis
+        GrandStaff-LMX      clean rendered piano scores        system/page   200         relation transfer ablation
+        OLiMPiC             synthetic/scanned piano systems    system        200         relation ablation and strict boundary
+
+
+
+
+Figure 1: Overview of RIGOR-OMR. A staff-geometry estimator defines a normalized pitch grid; DEIM-D-FINE detects notation
+symbols; staff-aware prompts guide optional SAM2 mask refinement; and typed geometric relations support pitch–duration event
+assembly and structured score reconstruction.
+
+
+coordinates. A lightweight crop classifier may relabel only            but not the final Event-F1.
+within a compatible family, preventing a clef classifier, for
+example, from changing a notehead into a rest.                         Geometric Primitive Extraction and Relation Parsing
+                                                                       Each refined instance mask is converted into an appropri-
+Staff-Aware Prompt Generation and Mask Refinement                      ate primitive: polygons for area-like noteheads and acciden-
+For detection di , the prompt generator constructs                     tals, and pruned skeletons or endpoints for stems, beams,
+                      Pi = (bi , p+    −                               ledger lines, barlines, and slurs. Every primitive becomes
+                                  i , Pi ),                   (3)
+                                                                       a typed node v ∈ V with class, staff index, box, mask evi-
+                                                                −
+where bi is the box prompt, p+  i is a foreground point, and Pi        dence, and staff-normalized coordinates. RIGOR-OMR then
+contains staff-conditioned negative points. Prompt placement           constructs G = (V, E) using class-compatible geometric
+depends on the predicted family: noteheads tolerate staff-line         candidates. Notehead–stem edges require horizontal compat-
+overlap, whereas elongated stems and beams use orientation-            ibility and a bounded endpoint distance; stem–beam edges
+aware support. The image crop and prompt set are passed                require proximity between a stem endpoint and beam support.
+to the SAM2 image, prompt, and mask encoders (Ravi et al.              Ledger–notehead, accidental–notehead, and slur/tie endpoint
+2025). SAM2 is optional and acts as a boundary refiner rather          candidates use analogous type-specific constraints. Conflict
+than a notation classifier; this distinction matches the factorial     pruning retains a consistent set of attachments before event
+ablation in Section 3.6, where masks improve inspectability            assembly.
+Structured Score Reconstruction The reconstruction back-          Removing C changes F1 by only +0.027 and its interval
+end converts connected primitives into musical events. The        [−0.614, 0.793] crosses zero. Thus relation reasoning, rather
+clef-conditioned grid Gk determines pitch, while stem, beam,      than segmentation masks, explains the principal measured
+flag, and dot evidence determines duration. Relation edges        gain.
+bind attributes to the same event; measure position, staff
+membership, and chord compatibility constrain the final           3.7   Which Relations Transfer?
+serialization. The system exports both an auditable event         We next remove one edge family from frozen full-pipeline
+representation and MusicXML or a dataset-compatible proxy         outputs and deterministically rebuild notation. Table 5 isolates
+sequence. Because reconstruction is deterministic once V and      the mechanism more precisely than switching the whole
+E are fixed, relation families can be removed and the score       graph. Notehead–stem edges contribute significantly on all
+rebuilt without retraining or rerunning the detector, enabling    three datasets. Beam–stem edges are significant on Debussy
+the controlled edge ablations in Section 3.7.                     and OLiMPiC; their positive GrandStaff effect is uncertain
+                                                                  because the interval crosses zero. Slur/tie endpoints produce
+3.3   Setup and Baselines                                         no Debussy Event-F1 change and are not presented as an
+Polish test24 and Debussy transfer24 are the main zero-shot       effective component.
+targets. Debussy contains 24 evenly spaced systems from              These ablations use the same cached A+B+C+D path within
+24 distinct source documents. RIGOR-OMR, SMT (Ríos-               each dataset. Their OLiMPiC full value therefore belongs to
+Vila, Calvo-Zaragoza, and Paquet 2024), and Zeus (Mayer           the controlled ablation protocol and is not numerically pooled
+et al. 2024) receive identical target images and no target-       with the official-style value in Table 3.
+domain adaptation. SMT uses its released FP-GrandStaff
+checkpoint and Zeus its released GrandStaff-LMX checkpoint.       3.8   Pitch–Duration Diagnosis
+We additionally evaluate 200 frozen GrandStaff and 200            On Debussy, RIGOR-OMR obtains pitch-only and duration-
+OLiMPiC outputs for relation ablation. All Event-F1 values        only F1 values of 26.119 and 33.901, respectively, compared
+are corpus aggregates; confidence intervals use 10,000 paired     with 20.318 and 29.550 for Zeus and 4.553 and 16.530 for
+bootstrap resamples.                                              SMT. The much lower joint F1 of 8.517 shows that locally
+                                                                  correct attributes are not reliably bound into the same event.
+3.4   Zero-Shot Cross-Domain Content Recovery                     RIGOR-OMR contains 527 pitch-correct/duration-wrong and
+Table 2 gives the central comparison. On Polish, RIGOR-           760 duration-correct/pitch-wrong matching opportunities.
+OMR reaches 17.083 Event-F1, exceeding SMT by 13.352              This localizes the next bottleneck in joint event binding and
+points (95% CI [10.891, 15.774]) and Zeus by 15.751 points        globally constrained decoding rather than in either marginal
+([13.477, 18.422]). On Debussy it exceeds SMT by 6.449            attribute alone.
+points ([4.200, 8.585]). Its 0.736-point advantage over Zeus is
+not significant ([−2.465, 3.948]), so the supported conclusion    3.9   Analysis
+is comparable performance rather than superiority.                What the Results Establish The strongest positive evi-
+   The output ratios expose distinct failure modes. SMT           dence comes from severe zero-shot shift. Polish separates
+generates more than four times the reference event count          RIGOR-OMR from both sequence baselines with paired inter-
+on Debussy, causing severe insertion error. Zeus emits only       vals that exclude zero, while Debussy independently confirms
+one fifth of the reference count on Polish, causing recall        a substantial advantage over SMT. The edge studies con-
+collapse. RIGOR-OMR remains imperfect but better balances         nect this behavior to a specific mechanism: staff-normalized
+recovered content and output size under the strongest shift.      notehead–stem reasoning is consistently useful across three
+                                                                  targets, and beam–stem reasoning transfers on two. These
+3.5   Strict Structure Is a Remaining Boundary                    effects arise without target-domain sequence training or visual
+Order-invariant content recovery does not measure voice or-       reruns.
+der or hierarchy. Table 3 therefore reports the official-style       The evidence does not support a universal win over Zeus.
+OLiMPiC test200 boundary. RIGOR-OMR completes every               Debussy is statistically tied, and OLiMPiC strongly favors
+conversion and outperforms the failed SMT transfer, but           Zeus under ordered and tree-structured metrics. The contrast
+Zeus remains substantially stronger in SER, Event-F1, and         reveals a useful division: explicit geometry preserves local
+TEDn. This result bounds our claim to cross-domain con-           musical content under appearance shift, whereas a learned
+tent robustness rather than universal structured transcription    autoregressive prior remains stronger at organizing events
+superiority.                                                      into globally valid voice and measure structure on a regular
+                                                                  target.
+3.6   Full-Factorial Component Ablation                           Inspectability and Failure Cases RIGOR-OMR retains
+We evaluate all 24 = 16 combinations of staff/geometry priors     staff lines, boxes, masks, typed edges, event hypotheses, and
+(A), symbol detection (B), optional SAM2 masks (C), and           MusicXML, so failure analysis can identify which stage first
+relation reasoning (D) on the 24 Debussy systems, totaling        loses information. We use a fixed best/median/worst selection
+384 predictions. Table 4 shows that A and B are prerequisite      rule for qualitative inspection rather than cherry-picking.
+stages. Removing D reduces F1 from 8.517 to 3.938, a              Relation reasoning helps most systems but can harm complex
+4.579-point loss with a paired 95% CI of [2.288, 7.019].          pages when an incorrect edge propagates into duration and
+Table 2: Zero-shot pitch–duration content recovery. All three methods are run locally with no target-domain adaptation. Best
+values per target are bold.
+
+                                                                                                             Target                                    Method                                                   Precision                            Recall                  Event-F1                 Pred./Gold
+                                                                                                             Polish                                    RIGOR-OMR                                                        18.734                    15.700                       17.083                                          0.838
+                                                                                                                                                       SMT                                                               2.733                     5.879                        3.731                                          2.151
+                                                                                                                                                       Zeus                                                              3.971                     0.800                        1.332                                          0.202
+                                                                                                             Debussy                                   RIGOR-OMR                                                            7.058                 10.737                        8.517                                          1.521
+                                                                                                                                                       SMT                                                                  1.277                  5.432                        2.068                                          4.252
+                                                                                                                                                       Zeus                                                                 7.463                  8.126                        7.781                                          1.089
+
+                                                                          V U R O Y N  Z K Y Z                                                                                                                  V U R O Y N  Z K Y Z  
+                                                                  9 : ' , ,  =  :  2  #                                                                                                         9 : ' , ,  =  :  2  #       
+
+                                                                                                                                                                        
+
+                                                                                                                                                                        
+ 9 : ' , ,  V G M K  , 
+
+
+
+
+                                                                                                                                            9 : ' , ,  V G M K  , 
+
+
+
+
+                                                                                                                                                                        
+
+                                                                                                                                                                        
+
+                                                                                                                                                                        
+
+                                                                                                                                                                         
+
+                                                                                                                                                                         
+                                                                                                                                                                                                                                              
+                                                                            9 3 :  V G M K  ,                                                                                                                      @ + ; 9  V G M K  , 
+                                            . [ M U 9 I N Z X  J K H [ Y Y _  U S X  Y _ Y Z K S  R \ R  Z X G T Y L K X                                                      . [ M U 9 I N Z X  J K H [ Y Y _  U S X  Y _ Y Z K S  R \ R  Z X G T Y L K X  
+                                                                 9 : ' , ,  =  :  2  #                                                                                                         9 : ' , ,  =  :  2  #       
+                               
+                                                                                                                                                                          
+
+                               
+                                                                                                                                                                                                                                                                                                                                                  * K H [ Y Y _  X K R G Z O U T  K J M K  L G S O R _  I U T Z X O H [ Z O U T       V G O X K J  H U U Z Y Z X G V  ) / 
+                                                                                                                                                                                                                                                                                     Y R [ X  Z O K  T U Z K N K G J  K T J V U O T Z Y
+ 9 : ' , ,  V G M K  , 
+
+
+
+
+                                                                                                                                            9 : ' , ,  V G M K  , 
+
+
+
+
+                               
+                                                                                                                                                                          
+
+                               
+                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                       H K G S  Y Z K S  M X U [ V
+
+
+                                                                                                                                                                         
+
+
+                                                                                                                                                                                                                                                                                    T U Z K N K G J  Y Z K S  G Z Z G I N S K T Z
+                                                                                                                                                                                                                                                     
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                            9 3 :  V G M K  ,                                                                                                                      @ + ; 9  V G M K  ,                                                                                                                                           , [ R R    K J M K  G H R G Z K J  + \ K T Z  ,    V U O T Z Y  
+
+
+
+
+Figure 2: Zero-shot and mechanism evidence. Left: paired page/system Event-F1; Polish provides the strongest separation, while
+Debussy shows an advantage over SMT and overlap with Zeus. Right: Debussy edge-family effects with paired 95% intervals.
+
+
+Table 3: Strict OLiMPiC test200 results. Lower SER/TEDn                                                                                                                                                                                          Table 4: Debussy full-factorial ablation. A: geometry; B:
+and higher Event-F1 are better.                                                                                                                                                                                                                  detection; C: SAM2; D: relations.
+
+                                         Method                                          SER No tup. Event-F1                                                                                      TEDn                                                         Variant                                                           Precision                                                Recall                                            Event-F1
+                                         RIGOR-OMR 74.421                                                     73.574                                8.786 61.342                                                                                                A+B+C+D                                                                            7.058                                 10.737                                                                 8.517
+                                         SMT       100.000                                                         –                                0.000 100.000                                                                                               A+B+D (without C)                                                                  7.113                                 10.695                                                                 8.544
+                                         Zeus       56.486                                                    50.625                               48.242 47.751                                                                                                A+B+C (without D)                                                                  8.437                                  2.568                                                                 3.938
+                                                                                                                                                                                                                                                                A+B (without C,D)                                                                  8.437                                  2.568                                                                 3.938
+                                                                                                                                                                                                                                                                Without A or B                                                                     0.000                                  0.000                                                                 0.000
+export. This behavior motivates confidence-weighted relation
+pruning and a globally constrained decoder, rather than adding
+more local edge types indiscriminately.
+                                                                                                                                                                                                                                                 ignores order and hierarchy, and the OLiMPiC results show
+                                                                                                                                                                                                                                                 that these omissions are substantial. SAM2 has no verified
+3.10                                       Limitations and Responsible Use                                                                                                                                                                       end-metric benefit, slur/tie edges are currently inactive under
+Absolute zero-shot Event-F1 remains low, so the reported                                                                                                                                                                                         the event projection, and detector replacement does not imply
+gains do not imply deployment-ready transcription. Event-F1                                                                                                                                                                                      detector-insensitive performance. The 24-item Polish and De-
+Table 5: Edge-level relation ablation under frozen visual predictions. ∆ is full minus ablated Event-F1; bold intervals exclude
+zero.
+
+                          Target           Removed edge            Full     Ablated       ∆             95% CI
+                          Debussy-24       notehead–stem          8.517       7.047    1.470      [0.282, 2.647]
+                          Debussy-24       beam–stem              8.517       7.114    1.403      [0.212, 2.607]
+                          Debussy-24       slur/tie endpoints     8.517       8.517    0.000      [0.000, 0.000]
+                          GrandStaff-200   notehead–stem          8.887       8.217    0.669      [0.013, 1.321]
+                          GrandStaff-200   beam–stem              8.887       8.304    0.583    [−0.067, 1.246]
+                          OLiMPiC-200      notehead–stem          9.624       7.713    1.911      [1.472, 2.358]
+                          OLiMPiC-200      beam–stem              9.624       8.082    1.543      [1.132, 1.972]
+
+
+bussy sets also motivate broader evaluation. Finally, we have             Convergence. In Proceedings of the IEEE/CVF Conference
+not completed a matched-hardware comparison of runtime,                   on Computer Vision and Pattern Recognition.
+peak memory, or trainable parameters, so RIGOR-OMR’s                      Jr., J. H.; and Pecina, P. 2017. The MUSCIMA++ Dataset
+modular adaptation cost remains a design property rather than             for Handwritten Optical Music Recognition. In Proceedings
+an experimentally established efficiency advantage.                       of the International Conference on Document Analysis and
+   The datasets contain public-domain or research-licensed                Recognition, 39–46.
+score images, but deployment on contemporary editions must
+                                                                          Kirillov, A.; Mintun, E.; Ravi, N.; Mao, H.; Rolland, C.;
+respect copyright and dataset licenses. Inaccurate pitch or
+                                                                          Gustafson, L.; Xiao, T.; Whitehead, S.; Berg, A. C.; Lo, W.-
+rhythm transcriptions should not be presented as authorita-
+                                                                          Y.; Dollár, P.; and Girshick, R. 2023. Segment Anything. In
+tive; practical use should preserve the source image, expose
+                                                                          Proceedings of the IEEE/CVF International Conference on
+confidence, and support human correction.
+                                                                          Computer Vision, 4015–4026.
+                     4    Conclusion                                      Li, Y.; Liu, H.; Jin, Q.; Cai, M.; and Li, P. 2023. TrOMR:
+                                                                          Transformer-Based Polyphonic Optical Music Recognition.
+RIGOR-OMR studies OMR applicability under zero-shot
+                                                                          In Proceedings of the IEEE International Conference on
+domain shift rather than extrapolating from in-domain scores.
+                                                                          Acoustics, Speech and Signal Processing, 1–5.
+Under a common pitch–duration event projection, it signifi-
+cantly outperforms SMT and Zeus on Polish and significantly               Lv, W.; Zhao, Y.; Chang, Q.; Huang, K.; Wang, G.; and
+outperforms SMT while matching Zeus on Debussy. Full-                     Liu, Y. 2024. RT-DETRv2: Improved Baseline with Bag-of-
+factorial and edge-level ablations attribute these gains to               Freebies for Real-Time Detection Transformer. arXiv preprint
+explicit relation reasoning, especially notehead–stem and                 arXiv:2407.17140.
+beam–stem attachments. At the same time, OLiMPiC SER                      Mayer, J.; Straka, M.; Jr., J. H.; and Pecina, P. 2024. Practical
+and TEDn show that local relational correctness has not yet               End-to-End Optical Music Recognition for Pianoform Music.
+become globally ordered, hierarchical notation. The resulting             In Proceedings of the International Conference on Document
+research direction is clear: preserve the transferable geometry           Analysis and Recognition.
+and inspectability of RIGOR-OMR while adding constrained                  Oquab, M.; Darcet, T.; Moutakanni, T.; Vo, H.; Szafraniec,
+event binding and voice-aware structural decoding.                        M.; Khalidov, V.; Fernandez, P.; Haziza, D.; Massa, F.; El-
+                                                                          Nouby, A.; Assran, M.; Ballas, N.; Galuba, W.; Howes, R.;
+                         References                                       Huang, P.-Y.; Li, S.-W.; Misra, I.; Rabbat, M.; Sharma, V.;
+Calvo-Zaragoza, J.; Jr., J. H.; and Pacha, A. 2021. Understand-           Synnaeve, G.; Xu, H.; Jégou, H.; Mairal, J.; Labatut, P.;
+ing Optical Music Recognition. ACM Computing Surveys,                     Joulin, A.; and Bojanowski, P. 2024. DINOv2: Learning
+53(4): 77:1–77:35.                                                        Robust Visual Features without Supervision. Transactions
+Calvo-Zaragoza, J.; and Rizo, D. 2018. Camera-PrIMuS:                     on Machine Learning Research.
+Neural End-to-End Optical Music Recognition on Realistic                  Pan, S. J.; and Yang, Q. 2010. A Survey on Transfer Learning.
+Monophonic Scores. In Proceedings of the International                    IEEE Transactions on Knowledge and Data Engineering,
+Conference on Music Information Retrieval, 248–255.                       22(10): 1345–1359.
+Carion, N.; Massa, F.; Synnaeve, G.; Usunier, N.; Kirillov,               Peng, Y.; Li, H.; Wu, P.; Zhang, Y.; Sun, X.; and Wu, F.
+A.; and Zagoruyko, S. 2020. End-to-End Object Detection                   2025. D-FINE: Redefine Regression Task in DETRs as Fine-
+with Transformers. In European Conference on Computer                     Grained Distribution Refinement. In International Conference
+Vision, 213–229.                                                          on Learning Representations.
+Ganin, Y.; Ustinova, E.; Ajakan, H.; Germain, P.; Larochelle,             Ravi, N.; Gabeur, V.; Hu, Y.-T.; Hu, R.; Ryali, C.; Ma, T.;
+H.; Laviolette, F.; Marchand, M.; and Lempitsky, V. 2016.                 Khedr, H.; Rädle, R.; Rolland, C.; Gustafson, L.; Mintun,
+Domain-Adversarial Training of Neural Networks. Journal                   E.; Pan, J.; Alwala, K. V.; Carion, N.; Wu, C.-Y.; Girshick,
+of Machine Learning Research, 17(59): 1–35.                               R.; Dollár, P.; and Feichtenhofer, C. 2025. SAM 2: Segment
+Huang, S.; Lu, Z.; Cun, X.; Yu, Y.; Zhou, X.; and Shen,                   Anything in Images and Videos. In International Conference
+X. 2025. DEIM: DETR with Improved Matching for Fast                       on Learning Representations.
+Rebelo, A.; Fujinaga, I.; Paszkiewicz, F.; Marçal, A. R. S.;
+Guedes, C.; and Cardoso, J. S. 2012. Optical Music Recogni-
+tion: State-of-the-Art and Open Issues. International Journal
+of Multimedia Information Retrieval, 1: 173–190.
+Ríos-Vila, A.; Calvo-Zaragoza, J.; and Paquet, T. 2024. Sheet
+Music Transformer: End-to-End Optical Music Recognition
+Beyond Monophonic Transcription. In Proceedings of the
+International Conference on Document Analysis and Recog-
+nition, 20–37.
+Ríos-Vila, A.; Calvo-Zaragoza, J.; and Rizo, D. 2023. End-to-
+End Optical Music Recognition for Pianoform Sheet Music.
+International Journal on Document Analysis and Recognition,
+26: 347–362.
+Ríos-Vila, A.; Calvo-Zaragoza, J.; Rizo, D.; and Paquet, T.
+2026. End-to-End Full-Page Optical Music Recognition for
+Pianoform Sheet Music. International Journal of Computer
+Vision, 134(2).
+Shatri, E.; and Fazekas, G. 2023. Real World Music Object
+Recognition. Transactions of the International Society for
+Music Information Retrieval, 6(1).
+Shatri, E.; and Fazekas, G. 2024. Knowledge Discov-
+ery in Optical Music Recognition: Enhancing Informa-
+tion Retrieval with Instance Segmentation. arXiv preprint
+arXiv:2408.15002.
+Tuggener, L.; Elezi, I.; Schmidhuber, J.; Pelillo, M.; and Stadel-
+mann, T. 2018. DeepScores: A Dataset for Segmentation,
+Detection and Classification of Tiny Objects. In Proceed-
+ings of the International Conference on Pattern Recognition,
+3704–3709.
+Tuggener, L.; Satyawan, Y. P.; Pacha, A.; Schmidhuber, J.;
+and Stadelmann, T. 2021. The DeepScoresV2 Dataset and
+Benchmark for Music Object Detection. In Proceedings of the
+International Conference on Pattern Recognition, 9188–9195.
+Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.;
+Gomez, A. N.; Kaiser, L.; and Polosukhin, I. 2017. Attention Is
+All You Need. In Advances in Neural Information Processing
+Systems, volume 30.
+Wang, J.; Lan, C.; Liu, C.; Ouyang, Y.; and Qin, T. 2021.
+Generalizing to Unseen Domains: A Survey on Domain
+Generalization. In Proceedings of the International Joint
+Conference on Artificial Intelligence, 4627–4635.
+Yosinski, J.; Clune, J.; Bengio, Y.; and Lipson, H. 2014. How
+Transferable Are Features in Deep Neural Networks? In Ad-
+vances in Neural Information Processing Systems, volume 27.
+
